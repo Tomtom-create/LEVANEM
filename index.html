@@ -1136,7 +1136,53 @@ async function soumettreFormulaire(){
     }));
     await sb.from('dossier_demarches').insert(demarches);
 
-    // 4. Succès
+    // 4. Notification email via Resend
+    try{
+      await fetch('https://api.resend.com/emails',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer re_difj8eP9_GFmrcZsaHHmKeeWtuthHX7Xj'
+        },
+        body:JSON.stringify({
+          from:'LEVAMEN <onboarding@resend.dev>',
+          to:['thomas.helly98@gmail.com'],
+          subject:'🕊️ Nouveau dossier — '+( v('f-prenom')||'')+' '+(v('f-nom')||''),
+          html:`
+            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0d0b09;color:#f8f2e0;padding:40px;">
+              <h1 style="font-family:serif;color:#f0d898;letter-spacing:4px;font-weight:300;margin-bottom:8px">LEVAMEN</h1>
+              <p style="color:#a09888;font-style:italic;margin-bottom:32px">Nouveau dossier reçu</p>
+              <div style="border-left:2px solid #d4aa6a;padding-left:20px;margin-bottom:24px">
+                <h2 style="color:#f0d898;font-weight:400;margin-bottom:16px">Défunt</h2>
+                <p><strong style="color:#d4aa6a">Nom :</strong> ${v('f-prenom')||'-'} ${v('f-nom')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Date de décès :</strong> ${v('f-deces')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Lieu de décès :</strong> ${v('f-lieu-deces')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Nationalité :</strong> ${v('f-nationalite')||'-'}</p>
+              </div>
+              <div style="border-left:2px solid #d4aa6a;padding-left:20px;margin-bottom:24px">
+                <h2 style="color:#f0d898;font-weight:400;margin-bottom:16px">Déclarant</h2>
+                <p><strong style="color:#d4aa6a">Nom :</strong> ${v('f-dec-prenom')||'-'} ${v('f-dec-nom')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Email :</strong> ${v('f-email')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Téléphone :</strong> ${v('f-tel')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Lien :</strong> ${v('f-qualite')||'-'}</p>
+              </div>
+              <div style="border-left:2px solid #d4aa6a;padding-left:20px;margin-bottom:32px">
+                <h2 style="color:#f0d898;font-weight:400;margin-bottom:16px">Situation</h2>
+                <p><strong style="color:#d4aa6a">Obsèques :</strong> ${v('f-obseques')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Testament :</strong> ${v('f-testament')||'-'}</p>
+                <p><strong style="color:#d4aa6a">Infos :</strong> ${v('f-info')||'-'}</p>
+              </div>
+              <a href="https://levamen.org/dashboard-admin.html" style="display:inline-block;background:#d4aa6a;color:#0d0b09;padding:14px 32px;text-decoration:none;font-family:serif;letter-spacing:2px;font-size:12px;text-transform:uppercase">Voir le dossier →</a>
+              <p style="color:#7a7060;font-size:12px;margin-top:32px;font-style:italic">Référence : ${dossier.reference||dossier.id}</p>
+            </div>
+          `
+        })
+      });
+    }catch(emailErr){
+      console.warn('Email non envoyé:',emailErr);
+    }
+
+    // 5. Succès
     showToast('✅ Dossier transmis — votre référent vous contacte sous 2h');
     setTimeout(()=>{window.location.href='auth.html';},2500);
 
