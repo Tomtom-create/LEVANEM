@@ -1077,13 +1077,35 @@ const DEMARCHES_CODES=['etat_civil','obseques','notaire','camti','banques','fisc
 async function soumettreFormulaire(){
   const btn=document.getElementById('fnext');
   const lbl=document.getElementById('fnext-label');
+
+  // Validation champs obligatoires
+  const v=id=>document.getElementById(id)?.value?.trim()||null;
+  const requis=[
+    {id:'f-nom',label:'Nom du défunt'},
+    {id:'f-prenom',label:'Prénom du défunt'},
+    {id:'f-deces',label:'Date du décès'},
+    {id:'f-dec-nom',label:'Votre nom'},
+    {id:'f-dec-prenom',label:'Votre prénom'},
+    {id:'f-email',label:'Email de contact'},
+  ];
+  for(const r of requis){
+    if(!v(r.id)){
+      showToast('⚠️ Champ requis : '+r.label);
+      // Aller à la bonne étape
+      if(['f-nom','f-prenom','f-deces'].includes(r.id)) goToStep(1);
+      else goToStep(2);
+      return;
+    }
+  }
+  // Validation email
+  const email=v('f-email');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('⚠️ Email invalide');goToStep(2);return;
+  }
+
   btn.disabled=true;
   lbl.textContent='Envoi en cours…';
 
-  // Récupérer les valeurs
-  const v=id=>document.getElementById(id)?.value?.trim()||null;
-
-  const email=v('f-email');
   const password='Levamen'+Math.random().toString(36).slice(2,8)+'!';
 
   try{
