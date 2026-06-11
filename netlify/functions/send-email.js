@@ -10,7 +10,7 @@ exports.handler = async (event) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer re_difj8eP9_GFmrcZsaHHmKeeWtuthHX7Xj'
+        'Authorization': 'Bearer ' + process.env.RESEND_API_KEY
       },
       body: JSON.stringify(body)
     });
