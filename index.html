@@ -27,14 +27,14 @@ body{
   background:var(--ink);color:var(--cream);
   overflow-x:hidden;
 }
-
+ 
 /* ── Grain overlay ── */
 body::after{
   content:'';position:fixed;inset:0;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events:none;z-index:9990;opacity:.3;
 }
-
+ 
 /* ── NAV ── */
 nav{
   position:fixed;top:0;left:0;right:0;z-index:200;
@@ -69,7 +69,7 @@ nav.scrolled{
   transition:background .3s,color .3s;
 }
 .nav-cta:hover{background:var(--gold);color:var(--ink)}
-
+ 
 /* ── Hamburger ── */
 .nav-hamburger{
   display:none;flex-direction:column;gap:5px;
@@ -82,7 +82,7 @@ nav.scrolled{
 .nav-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
 .nav-hamburger.open span:nth-child(2){opacity:0}
 .nav-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
-
+ 
 /* ── Mobile menu ── */
 .mobile-menu{
   display:none;position:fixed;inset:0;z-index:190;
@@ -101,7 +101,7 @@ nav.scrolled{
 .mobile-menu .nav-cta{
   margin-top:16px;font-size:.65rem;padding:14px 36px;
 }
-
+ 
 /* ── HERO ── */
 #hero{
   min-height:100vh;
@@ -197,7 +197,7 @@ nav.scrolled{
 }
 .scroll-line{width:1px;height:50px;background:linear-gradient(180deg,var(--gold),transparent);animation:scroll-pulse 2s infinite}
 @keyframes scroll-pulse{0%,100%{opacity:.4;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.15)}}
-
+ 
 /* ── STATS BAND ── */
 .stats-band{
   border-top:1px solid var(--border);
@@ -219,7 +219,7 @@ nav.scrolled{
   text-transform:uppercase;margin-top:6px;
   display:block;
 }
-
+ 
 /* ── SECTION BASE ── */
 section{padding:120px 60px}
 .section-eyebrow{
@@ -244,7 +244,7 @@ section{padding:120px 60px}
   line-height:1.9;max-width:600px;
   font-style:italic;
 }
-
+ 
 /* ── MISSION ── */
 #mission{
   display:grid;grid-template-columns:1fr 1fr;gap:100px;
@@ -285,7 +285,7 @@ section{padding:120px 60px}
   text-transform:uppercase;margin-bottom:8px;
 }
 .value-desc{font-size:.95rem;color:var(--cream2);line-height:1.7}
-
+ 
 .mission-visual{
   position:relative;
   display:flex;align-items:center;justify-content:center;
@@ -334,7 +334,7 @@ section{padding:120px 60px}
   from{transform:rotate(0deg) translateX(190px) rotate(0deg)}
   to{transform:rotate(360deg) translateX(190px) rotate(-360deg)}
 }
-
+ 
 /* ── TIMELINE ── */
 #demarches{
   background:linear-gradient(180deg,var(--ink) 0%,rgba(10,8,6,1) 100%);
@@ -366,7 +366,7 @@ section{padding:120px 60px}
 .tl-content:hover{border-color:var(--border2)}
 .tl-content.right{grid-column:3}
 .tl-content.left{grid-column:1}
-
+ 
 .tl-node{
   grid-column:2;
   display:flex;align-items:flex-start;justify-content:center;
@@ -383,7 +383,7 @@ section{padding:120px 60px}
   background:var(--gold);
   top:50%;left:50%;transform:translate(-50%,-50%);
 }
-
+ 
 .tl-badge{
   font-family:'Cinzel',serif;font-size:.5rem;
   letter-spacing:.2em;text-transform:uppercase;
@@ -393,7 +393,7 @@ section{padding:120px 60px}
 .tl-badge.urgent{background:rgba(192,57,43,.18);color:#f08080;border:1px solid rgba(192,57,43,.35)}
 .tl-badge.prioritaire{background:rgba(212,170,106,.12);color:var(--gold3);border:1px solid var(--border2)}
 .tl-badge.standard{background:rgba(255,255,255,.05);color:var(--cream2);border:1px solid var(--border)}
-
+ 
 .tl-title{
   font-family:'Cinzel',serif;font-size:.88rem;
   font-weight:500;color:var(--cream);
@@ -407,7 +407,7 @@ section{padding:120px 60px}
   text-transform:uppercase;margin-top:14px;
   padding-top:14px;border-top:1px solid var(--border);
 }
-
+ 
 /* ── SERVICES ── */
 .services-grid{
   display:grid;grid-template-columns:1fr 1fr;gap:1px;
@@ -438,7 +438,7 @@ section{padding:120px 60px}
   margin-bottom:10px;
 }
 .service-desc{font-size:.92rem;color:var(--cream2);line-height:1.7}
-
+ 
 /* ── FORMULAIRE ── */
 #formulaire{
   background:rgba(212,170,106,.02);
@@ -466,10 +466,10 @@ section{padding:120px 60px}
 }
 .form-step-btn.active{color:var(--gold3)}
 .form-step-btn.active::after{transform:scaleX(1)}
-
+ 
 .form-panel{display:none}
 .form-panel.active{display:block}
-
+ 
 .fg{margin-bottom:24px}
 .fl{
   display:block;font-family:'Cinzel',serif;font-size:.54rem;
@@ -492,7 +492,7 @@ section{padding:120px 60px}
 .fs{cursor:pointer}
 .fta{resize:vertical;min-height:120px}
 .fr{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-
+ 
 .form-nav{
   display:flex;justify-content:space-between;align-items:center;
   margin-top:40px;padding-top:32px;
@@ -523,12 +523,12 @@ section{padding:120px 60px}
 .btn-next:hover::before{transform:scaleX(1)}
 .btn-next:hover{color:var(--ink)}
 .btn-next span{position:relative;z-index:1}
-
+ 
 .form-privacy{
   text-align:center;margin-top:24px;
   font-size:.82rem;color:var(--mist);font-style:italic;
 }
-
+ 
 /* ── CONTACTS ── */
 .contacts-header{text-align:center;margin-bottom:60px}
 .contacts-grid{
@@ -557,7 +557,7 @@ section{padding:120px 60px}
   font-size:.9rem;color:var(--cream2);line-height:1.5;
 }
 .cc-item svg{flex-shrink:0;margin-top:3px;color:var(--gold2)}
-
+ 
 /* ── CTA FINAL ── */
 #cta{
   text-align:center;padding:160px 60px;
@@ -586,7 +586,7 @@ section{padding:120px 60px}
   text-transform:uppercase;margin-top:24px;display:block;
 }
 .cta-phone strong{color:var(--gold3)}
-
+ 
 /* ── FOOTER ── */
 footer{
   border-top:1px solid var(--border);
@@ -620,7 +620,7 @@ footer{
   letter-spacing:.15em;color:var(--mist);
   text-transform:uppercase;
 }
-
+ 
 /* ── ANIMATIONS ── */
 @keyframes fade-up{
   from{opacity:0;transform:translateY(24px)}
@@ -632,7 +632,7 @@ footer{
 .reveal-d2{transition-delay:.2s}
 .reveal-d3{transition-delay:.3s}
 .reveal-d4{transition-delay:.4s}
-
+ 
 /* ── TOAST ── */
 .toast{
   position:fixed;bottom:32px;right:32px;
@@ -648,7 +648,7 @@ footer{
   pointer-events:none;
 }
 .toast.show{transform:translateY(0);opacity:1}
-
+ 
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   nav{padding:20px 24px}
@@ -685,9 +685,9 @@ footer{
 </style>
 </head>
 <body>
-
+ 
 <div class="toast" id="toast"></div>
-
+ 
 <!-- Mobile menu -->
 <div class="mobile-menu" id="mobile-menu">
   <a href="#mission" onclick="closeMobile()">Mission</a>
@@ -696,7 +696,7 @@ footer{
   <a href="#contacts" onclick="closeMobile()">Contacts</a>
   <a href="auth.html" class="nav-cta" onclick="closeMobile()">Ouvrir mon dossier</a>
 </div>
-
+ 
 <!-- NAV -->
 <nav id="navbar">
   <a href="#" class="nav-logo">LEVAMEN</a>
@@ -711,7 +711,7 @@ footer{
     <span></span><span></span><span></span>
   </button>
 </nav>
-
+ 
 <!-- HERO -->
 <section id="hero">
   <div class="hero-bg"></div>
@@ -733,7 +733,7 @@ footer{
     <span>Découvrir</span>
   </div>
 </section>
-
+ 
 <!-- STATS -->
 <div class="stats-band">
   <div class="stat-item reveal"><span class="stat-num">9</span><span class="stat-label">Démarches prises en charge</span></div>
@@ -741,7 +741,7 @@ footer{
   <div class="stat-item reveal reveal-d2"><span class="stat-num">6</span><span class="stat-label">Organismes monégasques</span></div>
   <div class="stat-item reveal reveal-d3"><span class="stat-num">100%</span><span class="stat-label">Confidentialité garantie</span></div>
 </div>
-
+ 
 <!-- MISSION -->
 <section>
   <div id="mission">
@@ -776,7 +776,7 @@ footer{
     </div>
   </div>
 </section>
-
+ 
 <!-- TIMELINE -->
 <section id="demarches">
   <div class="timeline-wrap">
@@ -789,7 +789,7 @@ footer{
       </p>
     </div>
     <div class="timeline" id="timeline">
-
+ 
       <div class="tl-item">
         <div class="tl-content left">
           <span class="tl-badge urgent">Urgent</span>
@@ -801,7 +801,7 @@ footer{
         <div class="tl-node"><div class="tl-dot"></div></div>
         <div></div>
       </div>
-
+ 
       <div class="tl-item">
         <div></div>
         <div class="tl-node"><div class="tl-dot"></div></div>
@@ -813,7 +813,7 @@ footer{
           <p class="tl-org">📍 Pompes Funèbres Monaco</p>
         </div>
       </div>
-
+ 
       <div class="tl-item">
         <div class="tl-content left">
           <span class="tl-badge prioritaire">Prioritaire</span>
@@ -825,7 +825,7 @@ footer{
         <div class="tl-node"><div class="tl-dot"></div></div>
         <div></div>
       </div>
-
+ 
       <div class="tl-item">
         <div></div>
         <div class="tl-node"><div class="tl-dot"></div></div>
@@ -837,7 +837,7 @@ footer{
           <p class="tl-org">📍 CAMTI — 11 Rue du Gabian</p>
         </div>
       </div>
-
+ 
       <div class="tl-item">
         <div class="tl-content left">
           <span class="tl-badge standard">Standard</span>
@@ -849,7 +849,7 @@ footer{
         <div class="tl-node"><div class="tl-dot"></div></div>
         <div></div>
       </div>
-
+ 
       <div class="tl-item">
         <div></div>
         <div class="tl-node"><div class="tl-dot"></div></div>
@@ -861,7 +861,7 @@ footer{
           <p class="tl-org">📍 Direction des Services Fiscaux</p>
         </div>
       </div>
-
+ 
       <div class="tl-item">
         <div class="tl-content left">
           <span class="tl-badge standard">Standard</span>
@@ -873,11 +873,11 @@ footer{
         <div class="tl-node"><div class="tl-dot"></div></div>
         <div></div>
       </div>
-
+ 
     </div>
   </div>
 </section>
-
+ 
 <!-- SERVICES -->
 <section id="services">
   <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center">
@@ -902,7 +902,7 @@ footer{
     </div>
   </div>
 </section>
-
+ 
 <!-- FORMULAIRE -->
 <section id="formulaire">
   <div class="form-wrap">
@@ -914,13 +914,13 @@ footer{
         Remplissez ce formulaire confidentiel. Votre référent vous contactera sous 2 heures.
       </p>
     </div>
-
+ 
     <div class="form-steps">
       <button class="form-step-btn active" onclick="goToStep(1)">I — Le défunt</button>
       <button class="form-step-btn" onclick="goToStep(2)">II — Le déclarant</button>
       <button class="form-step-btn" onclick="goToStep(3)">III — Situation</button>
     </div>
-
+ 
     <div class="form-panel active" id="fp1">
       <div class="fr"><div class="fg"><label class="fl">Nom de naissance</label><input class="fi" id="f-nom" placeholder="DUPONT"/></div><div class="fg"><label class="fl">Prénom(s)</label><input class="fi" id="f-prenom" placeholder="Marie-Claire"/></div></div>
       <div class="fr"><div class="fg"><label class="fl">Date de naissance</label><input type="date" class="fi" id="f-naissance"/></div><div class="fg"><label class="fl">Lieu de naissance</label><input class="fi" id="f-lieu-naissance" placeholder="Monaco"/></div></div>
@@ -928,14 +928,14 @@ footer{
       <div class="fg"><label class="fl">Nationalité</label><select class="fs" id="f-nationalite"><option>Monégasque</option><option>Française</option><option>Italienne</option><option>Autre</option></select></div>
       <div class="fg"><label class="fl">Adresse du dernier domicile</label><input class="fi" id="f-adresse" placeholder="Rue, Monaco"/></div>
     </div>
-
+ 
     <div class="form-panel" id="fp2">
       <div class="fr"><div class="fg"><label class="fl">Votre nom</label><input class="fi" id="f-dec-nom" placeholder="MARTIN"/></div><div class="fg"><label class="fl">Votre prénom</label><input class="fi" id="f-dec-prenom" placeholder="Jean"/></div></div>
       <div class="fg"><label class="fl">Lien avec le défunt</label><select class="fs" id="f-qualite"><option>Conjoint(e) / Partenaire</option><option>Enfant</option><option>Parent</option><option>Frère / Sœur</option><option>Autre</option></select></div>
       <div class="fr"><div class="fg"><label class="fl">Email de contact</label><input type="email" class="fi" id="f-email" placeholder="votre@email.com"/></div><div class="fg"><label class="fl">Téléphone</label><input type="tel" class="fi" id="f-tel" placeholder="+33 6 59 54 76 49"/></div></div>
       <div class="fg"><label class="fl">Votre adresse</label><input class="fi" id="f-dec-adresse" placeholder="Adresse complète"/></div>
     </div>
-
+ 
     <div class="form-panel" id="fp3">
       <div class="fg"><label class="fl">Situation familiale du défunt</label><select class="fs" id="f-sitfam"><option>Marié(e)</option><option>Pacsé(e)</option><option>Veuf / Veuve</option><option>Divorcé(e)</option><option>Célibataire</option></select></div>
       <div class="fr"><div class="fg"><label class="fl">Testament ?</label><select class="fs" id="f-testament"><option>Inconnu</option><option>Oui — notarié</option><option>Oui — olographe</option><option>Non</option></select></div><div class="fg"><label class="fl">Type d'obsèques</label><select class="fs" id="f-obseques"><option>Inhumation</option><option>Crémation</option><option>Selon les souhaits</option><option>À déterminer</option></select></div></div>
@@ -945,7 +945,7 @@ footer{
         <p style="font-size:.92rem;color:var(--cream2);line-height:1.7">Si la déclaration n'a pas encore été effectuée, appelez-nous directement au <strong style="color:var(--gold3)">+33 6 59 54 76 49</strong></p>
       </div>
     </div>
-
+ 
     <div class="form-nav">
       <button class="btn-prev" id="fprev" onclick="prevStep()" style="visibility:hidden">← Retour</button>
       <button class="btn-next" id="fnext" onclick="nextStep()"><span id="fnext-label">Continuer →</span></button>
@@ -953,7 +953,7 @@ footer{
     <p class="form-privacy">🔒 Données chiffrées · <span style="color:var(--gold2)">Conformité RGPD</span> · Monaco</p>
   </div>
 </section>
-
+ 
 <!-- CONTACTS -->
 <section id="contacts">
   <div style="max-width:1200px;margin:0 auto">
@@ -973,7 +973,7 @@ footer{
     </div>
   </div>
 </section>
-
+ 
 <!-- CTA -->
 <section id="cta">
   <span class="cta-eyebrow">Disponibles maintenant</span>
@@ -982,7 +982,7 @@ footer{
   <a href="auth.html" class="btn-hero-primary reveal">Ouvrir mon dossier →</a>
   <span class="cta-phone reveal">Urgence 24h/24 · 7j/7 <strong>+33 6 59 54 76 49</strong></span>
 </section>
-
+ 
 <!-- FOOTER -->
 <footer>
   <div>
@@ -1024,19 +1024,19 @@ footer{
   <span>© 2025 LEVAMEN · Association à but non lucratif · Monaco</span>
   <span>🇲🇨 Principauté de Monaco</span>
 </div>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SB_URL='https://xvudxyktgmtxctkgsusj.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2dWR4eWt0Z210eGN0a2dzdXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNjQ4NjIsImV4cCI6MjA5Njc0MDg2Mn0.oi0zXLDRTzQDe3tYkf2hYy-NSfO3N-cFod80fPJXavo';
 const {createClient}=supabase;
 const sb=createClient(SB_URL,SB_KEY);
-
+ 
 // ── Navbar scroll ──
 window.addEventListener('scroll',()=>{
   document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60);
 });
-
+ 
 // ── Mobile menu ──
 function toggleMobile(){
   const menu=document.getElementById('mobile-menu');
@@ -1050,13 +1050,13 @@ function closeMobile(){
   document.getElementById('hamburger').classList.remove('open');
   document.body.style.overflow='';
 }
-
+ 
 // ── Reveal on scroll ──
 const obs=new IntersectionObserver(entries=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible')}});
 },{threshold:.1});
 document.querySelectorAll('.reveal,.tl-item').forEach(el=>obs.observe(el));
-
+ 
 // ── Form steps ──
 let step=1;
 function goToStep(n){
@@ -1071,21 +1071,21 @@ function nextStep(){
   else{soumettreFormulaire();}
 }
 function prevStep(){if(step>1)goToStep(step-1)}
-
+ 
 const DEMARCHES_CODES=['etat_civil','obseques','notaire','camti','banques','fiscalite','logement','assurances','abonnements'];
-
+ 
 async function soumettreFormulaire(){
   const btn=document.getElementById('fnext');
   const lbl=document.getElementById('fnext-label');
   btn.disabled=true;
   lbl.textContent='Envoi en cours…';
-
+ 
   // Récupérer les valeurs
   const v=id=>document.getElementById(id)?.value?.trim()||null;
-
+ 
   const email=v('f-email');
   const password='Levamen'+Math.random().toString(36).slice(2,8)+'!';
-
+ 
   try{
     // 1. Créer le compte utilisateur
     const{data:authData,error:authErr}=await sb.auth.signUp({
@@ -1098,13 +1098,13 @@ async function soumettreFormulaire(){
         role:'famille'
       }}
     });
-
+ 
     if(authErr&&!authErr.message.includes('already')){
       throw new Error(authErr.message);
     }
-
+ 
     const userId=authData?.user?.id;
-
+ 
     // 2. Créer le dossier
     const{data:dossier,error:dossierErr}=await sb.from('dossiers').insert({
       declarant_id:userId||null,
@@ -1125,9 +1125,9 @@ async function soumettreFormulaire(){
       declarant_qualite:v('f-qualite'),
       declarant_adresse:v('f-dec-adresse'),
     }).select().single();
-
+ 
     if(dossierErr)throw new Error(dossierErr.message);
-
+ 
     // 3. Créer les 9 démarches
     const demarches=DEMARCHES_CODES.map(code=>({
       dossier_id:dossier.id,
@@ -1135,7 +1135,7 @@ async function soumettreFormulaire(){
       statut:'en_attente'
     }));
     await sb.from('dossier_demarches').insert(demarches);
-
+ 
     // 4. Notification email via Resend
     try{
       await fetch('https://api.resend.com/emails',{
@@ -1181,11 +1181,43 @@ async function soumettreFormulaire(){
     }catch(emailErr){
       console.warn('Email non envoyé:',emailErr);
     }
-
-    // 5. Succès
-    showToast('✅ Dossier transmis — votre référent vous contacte sous 2h');
+ 
+    // 5. Email au client avec ses identifiants
+    try{
+      await fetch('https://api.resend.com/emails',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':'Bearer re_difj8eP9_GFmrcZsaHHmKeeWtuthHX7Xj'
+        },
+        body:JSON.stringify({
+          from:'LEVAMEN <onboarding@resend.dev>',
+          to:[email],
+          subject:'Votre espace LEVAMEN — Accès à votre dossier',
+          html:`
+            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;background:#0d0b09;color:#f8f2e0;padding:40px;">
+              <h1 style="font-family:serif;color:#f0d898;letter-spacing:4px;font-weight:300;margin-bottom:8px">LEVAMEN</h1>
+              <p style="color:#a09888;font-style:italic;margin-bottom:32px">Curam tollimus, memoriam servas.</p>
+              <p style="font-size:18px;margin-bottom:24px">Bonjour ${v('f-dec-prenom')||''},</p>
+              <p style="line-height:1.8;margin-bottom:32px">Votre dossier a bien été transmis. Votre référent vous contactera sous 2 heures.<br>Vous pouvez suivre l'avancement de vos démarches depuis votre espace personnel.</p>
+              <div style="background:rgba(212,170,106,.08);border:1px solid rgba(212,170,106,.3);padding:24px;margin-bottom:32px">
+                <p style="color:#f0d898;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px">Vos identifiants</p>
+                <p><strong style="color:#d4aa6a">Email :</strong> ${email}</p>
+                <p><strong style="color:#d4aa6a">Mot de passe temporaire :</strong> ${password}</p>
+                <p style="color:#a09888;font-size:12px;margin-top:12px;font-style:italic">Pensez à modifier votre mot de passe après votre première connexion.</p>
+              </div>
+              <a href="https://levamen.org/auth.html" style="display:inline-block;background:#d4aa6a;color:#0d0b09;padding:14px 32px;text-decoration:none;font-family:serif;letter-spacing:2px;font-size:12px;text-transform:uppercase">Accéder à mon espace →</a>
+              <p style="color:#7a7060;font-size:12px;margin-top:32px">Référence dossier : ${dossier.reference||dossier.id}</p>
+            </div>
+          `
+        })
+      });
+    }catch(e){console.warn('Email client non envoyé:',e);}
+ 
+    // 6. Succès
+    showToast('✅ Dossier transmis — vérifiez votre email pour vos identifiants');
     setTimeout(()=>{window.location.href='auth.html';},2500);
-
+ 
   }catch(e){
     console.error(e);
     showToast('❌ Erreur : '+e.message);
@@ -1193,7 +1225,7 @@ async function soumettreFormulaire(){
     lbl.textContent='Envoyer le dossier →';
   }
 }
-
+ 
 // ── Toast ──
 function showToast(msg){
   const t=document.getElementById('toast');
