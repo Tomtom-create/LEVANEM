@@ -942,7 +942,7 @@ footer{
       <div class="fg"><label class="fl">Informations complémentaires</label><textarea class="fta" id="f-info" placeholder="Situation particulière, urgences…"></textarea></div>
       <div style="background:rgba(212,170,106,.05);border:1px solid var(--border);padding:24px;margin-top:8px">
         <p style="font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.2em;color:var(--gold3);text-transform:uppercase;margin-bottom:8px">Urgence 24h/24</p>
-        <p style="font-size:.92rem;color:var(--cream2);line-height:1.7">Si la déclaration n'a pas encore été effectuée, appelez-nous directement au <strong style="color:var(--gold3)">+33 6 59 54 76 49</strong></p>
+        <p style="font-size:.92rem;color:var(--cream2);line-height:1.7">Si la déclaration n'a pas encore été effectuée, appelez-nous directement au <strong style="color:var(--gold3)"><a href="tel:+33659547649" style="color:var(--gold3)">+33 6 59 54 76 49</a></strong></p>
       </div>
     </div>
 
@@ -980,7 +980,7 @@ footer{
   <h2 class="cta-title reveal">Vous n'avez pas<br>à traverser cela seul.</h2>
   <p class="cta-sub reveal">Notre équipe est disponible pour prendre en charge votre dossier immédiatement.</p>
   <a href="auth.html" class="btn-hero-primary reveal">Ouvrir mon dossier →</a>
-  <span class="cta-phone reveal">Urgence 24h/24 · 7j/7 <strong>+33 6 59 54 76 49</strong></span>
+  <span class="cta-phone reveal">Urgence 24h/24 · 7j/7 <strong><a href="tel:+33659547649" style="color:var(--gold3)">+33 6 59 54 76 49</a></strong></span>
 </section>
 
 <!-- FOOTER -->
@@ -1012,9 +1012,9 @@ footer{
   <div>
     <span class="footer-col-title">Informations</span>
     <div class="footer-links">
-      <a href="#">Mentions légales</a>
-      <a href="#">Confidentialité</a>
-      <a href="#">RGPD</a>
+      <a href="mentions-legales.html">Mentions légales</a>
+      <a href="confidentialite.html">Confidentialité</a>
+      <a href="confidentialite.html">RGPD</a>
       <a href="#">Accessibilité</a>
       <a href="#">FAQ</a>
     </div>
@@ -1230,9 +1230,10 @@ async function soumettreFormulaire(){
       });
     }catch(e){console.warn('Email client non envoyé:',e);}
 
-    // 6. Succès
-    showToast('✅ Dossier transmis — vérifiez votre email pour vos identifiants');
-    setTimeout(()=>{window.location.href='auth.html';},2500);
+    // 6. Succès → redirection vers page de confirmation
+    const ref = dossier.reference || dossier.id;
+    sessionStorage.setItem('levamen_ref', ref);
+    window.location.href = 'confirmation.html';
 
   }catch(e){
     console.error(e);
