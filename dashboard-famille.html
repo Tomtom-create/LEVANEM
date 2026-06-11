@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LEVAMEN — Mon dossier</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--ink:#0d0b09;--stone:#1a1714;--stone2:#222019;--stone3:#2a2820;--mist:#a09888;--mist2:#7a7060;--gold:#d4aa6a;--gold2:#b8883a;--gold3:#f0d898;--cream:#f8f2e0;--cream2:#ede4cc;--border:rgba(212,170,106,.18);--border2:rgba(212,170,106,.36);--red:#c0392b;--green:#27ae60}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Cormorant Garamond',Georgia,serif;background:var(--ink);color:var(--cream);min-height:100vh;display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{width:260px;min-height:100vh;background:var(--stone);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto}
+.sb-logo{padding:32px 28px;border-bottom:1px solid var(--border)}
+.sb-logo a{font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.sb-logo p{font-size:.72rem;color:var(--mist);font-style:italic;margin-top:6px}
+.sb-ref{padding:20px 28px;border-bottom:1px solid var(--border);background:rgba(201,169,110,.03)}
+.sb-ref-label{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist2);margin-bottom:8px;display:block}
+.sb-ref-name{font-size:.95rem;color:var(--cream);margin-bottom:4px}
+.sb-ref-status{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--green)}
+.sb-ref-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sb-nav{padding:20px 0;flex:1}
+.sb-nav-item{display:flex;align-items:center;gap:14px;padding:12px 28px;font-size:.9rem;color:var(--cream2);cursor:pointer;transition:color .2s,background .2s;border-left:2px solid transparent}
+.sb-nav-item:hover{color:var(--cream);background:rgba(255,255,255,.02)}
+.sb-nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,169,110,.05)}
+.sb-nav-item svg{flex-shrink:0;opacity:.7}
+.sb-nav-item.active svg{opacity:1}
+.sb-ref-num{padding:20px 28px;border-top:1px solid var(--border)}
+.sb-ref-num-label{font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist2);margin-bottom:4px;display:block}
+.sb-ref-num-val{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.1em;color:var(--gold2)}
+.sb-logout{padding:16px 28px;border-top:1px solid var(--border)}
+.sb-logout button{background:none;border:none;color:var(--mist);font-family:'Cormorant Garamond',serif;font-size:.85rem;cursor:pointer;font-style:italic;transition:color .2s}
+.sb-logout button:hover{color:var(--gold2)}
+
+/* ── MAIN ── */
+.main{margin-left:260px;flex:1;padding:48px;max-width:1100px}
+.page-header{margin-bottom:40px}
+.page-eyebrow{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold2);display:block;margin-bottom:10px}
+.page-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:300;letter-spacing:.1em;color:var(--cream);line-height:1.2}
+.page-sub{font-size:1rem;color:var(--cream2);margin-top:8px;font-style:italic}
+.view{display:none}.view.active{display:block}
+
+/* ── CARDS ── */
+.overview-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:40px}
+.ov-card{background:var(--stone);padding:24px 28px}
+.ov-label{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist2);margin-bottom:10px;display:block}
+.ov-val{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:300;color:var(--gold);line-height:1}
+.ov-sub{font-size:.78rem;color:var(--cream2);margin-top:6px}
+
+/* ── PROGRESS ── */
+.progress-section{background:var(--stone);border:1px solid var(--border);padding:32px;margin-bottom:32px}
+.ps-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.ps-title{font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream)}
+.ps-pct{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold)}
+.progress-bar-wrap{background:var(--stone2);height:4px;margin-bottom:32px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width 1s cubic-bezier(.4,0,.2,1)}
+.dem-list{display:flex;flex-direction:column;gap:2px}
+.dem-row{display:grid;grid-template-columns:32px 1fr 160px 120px;align-items:center;gap:20px;padding:18px 20px;background:var(--stone2);border:1px solid transparent;transition:border-color .2s}
+.dem-row:hover{border-color:var(--border)}
+.dem-status-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.dem-status-icon.complete{background:rgba(39,174,96,.15);color:var(--green)}
+.dem-status-icon.en_cours{background:rgba(201,169,110,.15);color:var(--gold)}
+.dem-status-icon.en_attente{background:var(--stone3);color:var(--mist2)}
+.dem-status-icon.bloque{background:rgba(192,57,43,.15);color:#e07070}
+.dem-name{font-size:.95rem;color:var(--cream)}
+.dem-name small{display:block;font-size:.78rem;color:var(--mist);margin-top:2px;font-style:italic}
+.dem-delay{font-size:.8rem;color:var(--cream2);font-style:italic}
+.dem-badge{display:inline-block;font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.15em;text-transform:uppercase;padding:4px 10px}
+.dem-badge.complete{background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.dem-badge.en_cours{background:rgba(201,169,110,.1);color:var(--gold);border:1px solid var(--border2)}
+.dem-badge.en_attente{background:var(--stone3);color:var(--mist);border:1px solid var(--border)}
+.dem-badge.bloque{background:rgba(192,57,43,.1);color:#e07070;border:1px solid rgba(192,57,43,.2)}
+
+/* ── DOCUMENTS ── */
+.docs-section{background:var(--stone);border:1px solid var(--border);padding:32px;margin-bottom:32px}
+.sec-title{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream);margin-bottom:24px;display:flex;justify-content:space-between;align-items:center}
+.doc-item{display:flex;align-items:center;gap:16px;padding:14px 18px;background:var(--stone2);border:1px solid var(--border);margin-bottom:6px;transition:border-color .2s}
+.doc-item:hover{border-color:var(--border2)}
+.doc-icon{font-size:1.2rem;flex-shrink:0}
+.doc-name{flex:1;font-size:.9rem;color:var(--cream)}
+.doc-meta{font-size:.78rem;color:var(--mist);font-style:italic}
+.doc-status{font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px}
+.doc-status.ok{background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.doc-status.wait{background:var(--stone3);color:var(--mist);border:1px solid var(--border)}
+.upload-zone{border:1px dashed var(--border2);padding:32px;text-align:center;margin-top:16px;cursor:pointer;transition:background .2s}
+.upload-zone:hover{background:rgba(201,169,110,.04)}
+.upload-zone p{font-size:.9rem;color:var(--mist);font-style:italic;margin-bottom:8px}
+.upload-zone span{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.2em;color:var(--gold2);text-transform:uppercase}
+
+/* ── MESSAGES ── */
+.messages-section{background:var(--stone);border:1px solid var(--border);padding:32px}
+.msg-thread{display:flex;flex-direction:column;gap:16px;margin-bottom:24px;max-height:400px;overflow-y:auto}
+.msg-thread::-webkit-scrollbar{width:4px}.msg-thread::-webkit-scrollbar-thumb{background:var(--border2)}
+.msg-bubble{max-width:75%;padding:14px 18px;line-height:1.6}
+.msg-bubble.them{align-self:flex-start;background:var(--stone2);border:1px solid var(--border)}
+.msg-bubble.me{align-self:flex-end;background:rgba(201,169,110,.08);border:1px solid var(--border2)}
+.msg-author{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold2);margin-bottom:6px}
+.msg-text{font-size:.92rem;color:var(--cream2)}
+.msg-time{font-size:.72rem;color:var(--mist2);margin-top:6px;font-style:italic}
+.msg-compose{display:flex;gap:12px;margin-top:16px}
+.msg-input{flex:1;background:var(--stone2);border:1px solid var(--border);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.95rem;padding:12px 16px;outline:none;transition:border-color .3s;resize:none;height:52px}
+.msg-input:focus{border-color:var(--border2)}
+.msg-send{background:transparent;border:1px solid var(--border2);color:var(--gold);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:0 24px;cursor:pointer;transition:background .3s,color .3s;white-space:nowrap}
+.msg-send:hover{background:var(--gold);color:var(--ink)}
+
+/* ── INFOS ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:32px}
+.info-block{background:var(--stone);padding:28px 32px}
+.info-block-title{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);margin-bottom:18px;display:block}
+.info-field{margin-bottom:14px}
+.info-label{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mist2);display:block;margin-bottom:3px}
+.info-val{font-size:.95rem;color:var(--cream)}
+
+/* ── BANNIÈRES ── */
+.notif{background:rgba(201,169,110,.06);border:1px solid var(--border2);padding:16px 24px;margin-bottom:32px;display:flex;align-items:center;gap:16px}
+.notif-text{font-size:.9rem;color:var(--cream2);flex:1;line-height:1.5}
+.notif-text strong{color:var(--gold)}
+.notif-close{background:none;border:none;color:var(--mist);cursor:pointer;font-size:1.2rem}
+.urgence-bar{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);padding:14px 24px;margin-bottom:32px;display:flex;align-items:center;gap:16px}
+.urgence-bar p{font-size:.88rem;color:#e07070;flex:1}
+.urgence-bar strong{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.15em}
+
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:16px}
+.loading-ring{width:40px;height:40px;border:1px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;color:var(--mist2);text-transform:uppercase}
+
+/* ══════════════════════════════════════
+   VUE COURRIERS — GÉNÉRATEUR PDF
+══════════════════════════════════════ */
+.courriers-hero{
+  background:var(--stone);border:1px solid var(--border);
+  padding:40px;margin-bottom:32px;
+  position:relative;overflow:hidden;
+}
+.courriers-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4}
+.ch-eyebrow{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold2);display:block;margin-bottom:12px}
+.ch-title{font-family:'Cinzel',serif;font-size:1.4rem;font-weight:300;letter-spacing:.08em;color:var(--cream);margin-bottom:10px}
+.ch-sub{font-size:.95rem;color:var(--cream2);font-style:italic;line-height:1.7;margin-bottom:28px;max-width:600px}
+.ch-actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;background:transparent;border:1px solid var(--gold);color:var(--gold);padding:14px 32px;cursor:pointer;transition:background .3s,color .3s;position:relative;overflow:hidden}
+.btn-primary:hover{background:var(--gold);color:var(--ink)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;background:transparent;border:1px solid var(--border2);color:var(--mist);padding:14px 28px;cursor:pointer;transition:border-color .3s,color .3s}
+.btn-secondary:hover{border-color:var(--border2);color:var(--cream)}
+
+/* Grille des courriers */
+.courriers-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+.courrier-card{
+  background:var(--stone);border:1px solid var(--border);
+  padding:24px 28px;
+  transition:border-color .3s;
+  position:relative;
+}
+.courrier-card:hover{border-color:var(--border2)}
+.courrier-card.selected{border-color:var(--gold2);background:rgba(201,169,110,.04)}
+.cc-check{
+  position:absolute;top:16px;right:16px;
+  width:20px;height:20px;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:transparent;
+  transition:all .2s;cursor:pointer;
+}
+.courrier-card.selected .cc-check{background:rgba(201,169,110,.15);border-color:var(--gold);color:var(--gold)}
+.cc-org{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);display:block;margin-bottom:8px}
+.cc-title{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.06em;color:var(--cream);margin-bottom:6px}
+.cc-desc{font-size:.82rem;color:var(--mist);font-style:italic;line-height:1.5;margin-bottom:12px}
+.cc-meta{display:flex;gap:8px;flex-wrap:wrap}
+.cc-tag{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px}
+.cc-tag.urgent{background:rgba(192,57,43,.1);color:#e07070;border:1px solid rgba(192,57,43,.2)}
+.cc-tag.prioritaire{background:rgba(230,126,34,.1);color:#e6a050;border:1px solid rgba(230,126,34,.2)}
+.cc-tag.standard{background:var(--stone3);color:var(--mist);border:1px solid var(--border)}
+.cc-tag.lettre{background:rgba(201,169,110,.08);color:var(--gold2);border:1px solid var(--border2)}
+.cc-tag.formulaire{background:rgba(41,128,185,.08);color:#7ab0d4;border:1px solid rgba(41,128,185,.2)}
+
+/* Alerte infos manquantes */
+.alert-missing{
+  background:rgba(192,57,43,.05);border:1px solid rgba(192,57,43,.2);
+  padding:16px 20px;margin-bottom:24px;
+  display:none;
+}
+.alert-missing.show{display:flex;gap:12px;align-items:flex-start}
+.alert-missing p{font-size:.88rem;color:#e07070;line-height:1.6}
+
+/* Alerte succès génération */
+.alert-success{
+  background:rgba(39,174,96,.05);border:1px solid rgba(39,174,96,.2);
+  padding:16px 20px;margin-bottom:24px;
+  display:none;align-items:center;gap:12px;
+}
+.alert-success.show{display:flex}
+.alert-success p{font-size:.88rem;color:#a8d8a8;flex:1}
+
+/* Spinner génération */
+.gen-spinner{display:none;align-items:center;gap:12px;padding:12px 0}
+.gen-spinner.show{display:flex}
+.gen-spinner-ring{width:16px;height:16px;border:1px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite}
+.gen-spinner p{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist2)}
+
+/* Section sélection */
+.select-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.select-bar-left{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cream)}
+.select-all-btn{background:none;border:none;color:var(--gold2);font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* ── Hamburger mobile ── */
+.mob-topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(13,11,9,.97);border-bottom:1px solid var(--border);padding:14px 20px;align-items:center;justify-content:space-between;backdrop-filter:blur(16px)}
+.mob-topbar.show{display:flex}
+.mob-logo{font-family:'Cinzel',serif;font-size:.9rem;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.mob-hamburger{display:flex;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.mob-hamburger span{display:block;width:22px;height:1px;background:var(--gold);transition:transform .3s,opacity .3s}
+.mob-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.mob-hamburger.open span:nth-child(2){opacity:0}
+.mob-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mob-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(13,11,9,.98);flex-direction:column;padding:80px 32px 32px;gap:4px;overflow-y:auto}
+.mob-drawer.open{display:flex}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .mob-topbar{display:flex}
+  .main{margin-left:0;padding:24px;padding-top:80px}
+  .overview-cards{grid-template-columns:1fr 1fr}
+  .info-grid{grid-template-columns:1fr}
+  .dem-row{grid-template-columns:28px 1fr;gap:12px}
+  .dem-delay{display:none}
+  .dem-badge{display:none}
+  .courriers-grid{grid-template-columns:1fr}
+  .msg-compose{flex-direction:column}
+  .msg-send{padding:12px}
+}
+@media(max-width:480px){
+  .overview-cards{grid-template-columns:1fr}
+  .courriers-grid{grid-template-columns:1fr}
+  .ch-actions{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile topbar -->
+<div class="mob-topbar" id="mob-topbar">
+  <a href="index.html" class="mob-logo">LEVAMEN</a>
+  <button class="mob-hamburger" id="mob-btn" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<!-- Mobile drawer -->
+<div class="mob-drawer" id="mob-drawer">
+  <div onclick="mobileNav('vue-suivi');closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">📊 Suivi des démarches</div>
+  <div onclick="mobileNav('vue-courriers');closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">📋 Courriers & PDF</div>
+  <div onclick="mobileNav('vue-docs');closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">📁 Documents</div>
+  <div onclick="mobileNav('vue-messages');closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">💬 Messages</div>
+  <div onclick="mobileNav('vue-infos');closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">ℹ️ Informations dossier</div>
+  <div onclick="logout()" style="display:flex;align-items:center;gap:14px;padding:14px 0;color:var(--mist);cursor:pointer;font-size:.9rem;font-style:italic;margin-top:auto">← Déconnexion</div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <a href="index.html">LEVAMEN</a>
+    <p>Mon espace famille</p>
+  </div>
+  <div class="sb-ref">
+    <span class="sb-ref-label">Votre référent</span>
+    <p class="sb-ref-name" id="ref-name">—</p>
+    <div class="sb-ref-status"><div class="sb-ref-dot"></div> Disponible</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-nav-item active" onclick="showView('vue-suivi',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Suivi des démarches
+    </div>
+    <div class="sb-nav-item" onclick="showView('vue-courriers',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="13" y2="14"/></svg>
+      Courriers & PDF
+    </div>
+    <div class="sb-nav-item" onclick="showView('vue-docs',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Documents
+    </div>
+    <div class="sb-nav-item" onclick="showView('vue-messages',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+    </div>
+    <div class="sb-nav-item" onclick="showView('vue-infos',this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Informations dossier
+    </div>
+  </nav>
+  <div class="sb-ref-num">
+    <span class="sb-ref-num-label">Référence dossier</span>
+    <span class="sb-ref-num-val" id="dossier-ref">LVN-—</span>
+  </div>
+  <div class="sb-logout"><button onclick="logout()">← Déconnexion</button></div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="loading" id="loading-state">
+    <div class="loading-ring"></div>
+    <p>Chargement du dossier…</p>
+  </div>
+
+  <!-- ═══════════ SUIVI ═══════════ -->
+  <div class="view" id="vue-suivi">
+    <div class="page-header">
+      <span class="page-eyebrow">Tableau de bord</span>
+      <h1 class="page-title" id="page-title-suivi">Bonjour,</h1>
+      <p class="page-sub">Suivi de vos démarches en temps réel</p>
+    </div>
+    <div class="urgence-bar" id="urgence-bar" style="display:none">
+      <span>🚨</span>
+      <p><strong>Action requise :</strong> La déclaration de décès doit être effectuée dans les 24h. Appelez-nous.</p>
+    </div>
+    <div class="notif" id="notif-banner">
+      <span style="font-size:1.2rem">🕊️</span>
+      <p class="notif-text">Bienvenue sur votre espace LEVAMEN. Votre référent <strong id="ref-notif">—</strong> prend en charge votre dossier.</p>
+      <button class="notif-close" onclick="this.closest('.notif').style.display='none'">×</button>
+    </div>
+    <div class="overview-cards">
+      <div class="ov-card"><span class="ov-label">Progression globale</span><div class="ov-val" id="ov-pct">0%</div><p class="ov-sub" id="ov-pct-sub">démarches complétées</p></div>
+      <div class="ov-card"><span class="ov-label">Démarches urgentes</span><div class="ov-val" id="ov-urgent" style="color:#e07070">0</div><p class="ov-sub">à traiter en priorité</p></div>
+      <div class="ov-card"><span class="ov-label">En cours</span><div class="ov-val" id="ov-encours">0</div><p class="ov-sub">prises en charge</p></div>
+      <div class="ov-card"><span class="ov-label">Complétées</span><div class="ov-val" id="ov-done" style="color:var(--green)">0</div><p class="ov-sub">terminées</p></div>
+    </div>
+    <div class="progress-section">
+      <div class="ps-header"><span class="ps-title">Avancement du dossier</span><span class="ps-pct" id="prog-pct">0%</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
+      <div class="dem-list" id="dem-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ COURRIERS PDF ═══════════ -->
+  <div class="view" id="vue-courriers">
+    <div class="page-header">
+      <span class="page-eyebrow">Génération automatique</span>
+      <h1 class="page-title">Courriers & Formulaires</h1>
+      <p class="page-sub">Téléchargez vos courriers officiels pré-remplis pour chaque organisme</p>
+    </div>
+
+    <div class="courriers-hero">
+      <span class="ch-eyebrow">Comment ça fonctionne</span>
+      <h2 class="ch-title">Vos informations, nos courriers</h2>
+      <p class="ch-sub">À partir des données de votre dossier, LEVAMEN génère automatiquement les lettres officielles et formulaires administratifs pré-remplis pour les 9 organismes monégasques. Sélectionnez les courriers souhaités et téléchargez-les en un clic.</p>
+      <div class="ch-actions">
+        <button class="btn-primary" onclick="genererTout()" id="btn-gen-tout">
+          ⬇ Télécharger tous les courriers (ZIP)
+        </button>
+        <button class="btn-secondary" onclick="toggleSelectAll()">Tout sélectionner</button>
+      </div>
+      <div class="gen-spinner" id="gen-spinner">
+        <div class="gen-spinner-ring"></div>
+        <p>Génération des courriers en cours…</p>
+      </div>
+      <div class="alert-success" id="alert-success">
+        <span>✅</span>
+        <p id="alert-success-text">Courriers générés avec succès.</p>
+      </div>
+    </div>
+
+    <div class="alert-missing" id="alert-missing">
+      <span>⚠️</span>
+      <p>Certaines informations du dossier sont manquantes. Les courriers seront générés avec des champs vides à compléter manuellement. <span id="missing-fields"></span></p>
+    </div>
+
+    <div class="select-bar">
+      <span class="select-bar-left">Sélectionnez les courriers à générer</span>
+      <button class="select-all-btn" onclick="toggleSelectAll()" id="select-all-btn">Tout sélectionner</button>
+    </div>
+
+    <div class="courriers-grid" id="courriers-grid">
+      <!-- Injecté par JS -->
+    </div>
+
+    <div style="text-align:center;padding:32px 0;border-top:1px solid var(--border)">
+      <p style="font-size:.85rem;color:var(--mist);font-style:italic;margin-bottom:16px">
+        Les courriers sont générés au format PDF et pré-remplis avec les informations de votre dossier.<br>
+        Vous devrez les signer avant envoi aux organismes concernés.
+      </p>
+      <button class="btn-primary" id="btn-gen-selection" onclick="genererSelection()">
+        ⬇ Générer les courriers sélectionnés
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════ DOCUMENTS ═══════════ -->
+  <div class="view" id="vue-docs">
+    <div class="page-header">
+      <span class="page-eyebrow">Gestion des pièces</span>
+      <h1 class="page-title">Documents</h1>
+      <p class="page-sub">Déposez et consultez les pièces de votre dossier</p>
+    </div>
+    <div class="docs-section">
+      <div class="sec-title"><span>Pièces du dossier</span><span id="doc-count" style="font-family:'Cormorant Garamond',serif;font-weight:300;color:var(--mist);font-size:.85rem">0 document(s)</span></div>
+      <div id="doc-list"><div style="font-size:.9rem;color:var(--mist);font-style:italic;padding:16px 0">Aucun document déposé pour l'instant.</div></div>
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" style="display:none" multiple onchange="handleUpload(this)"/>
+        <p>Glissez vos documents ici ou cliquez pour sélectionner</p>
+        <span>Formats acceptés : PDF, JPG, PNG · 10 Mo max</span>
+      </div>
+    </div>
+    <div style="background:var(--stone);border:1px solid var(--border);padding:24px 32px">
+      <span class="info-block-title" style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);margin-bottom:18px;display:block">Documents requis</span>
+      <div id="checklist-docs" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MESSAGES ═══════════ -->
+  <div class="view" id="vue-messages">
+    <div class="page-header">
+      <span class="page-eyebrow">Communication</span>
+      <h1 class="page-title">Messages</h1>
+      <p class="page-sub">Échangez directement avec votre référent</p>
+    </div>
+    <div class="messages-section">
+      <div class="sec-title"><span>Messagerie sécurisée</span></div>
+      <div class="msg-thread" id="msg-thread"></div>
+      <div class="msg-compose">
+        <textarea class="msg-input" id="msg-input" placeholder="Votre message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+        <button class="msg-send" onclick="sendMsg()">Envoyer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ INFOS ═══════════ -->
+  <div class="view" id="vue-infos">
+    <div class="page-header">
+      <span class="page-eyebrow">Dossier complet</span>
+      <h1 class="page-title">Informations</h1>
+      <p class="page-sub">Récapitulatif des informations de votre dossier</p>
+    </div>
+    <div class="info-grid">
+      <div class="info-block">
+        <span class="info-block-title">Le défunt</span>
+        <div class="info-field"><span class="info-label">Nom complet</span><span class="info-val" id="i-nom">—</span></div>
+        <div class="info-field"><span class="info-label">Date de naissance</span><span class="info-val" id="i-naissance">—</span></div>
+        <div class="info-field"><span class="info-label">Date du décès</span><span class="info-val" id="i-deces">—</span></div>
+        <div class="info-field"><span class="info-label">Lieu du décès</span><span class="info-val" id="i-lieu">—</span></div>
+        <div class="info-field"><span class="info-label">Nationalité</span><span class="info-val" id="i-nat">—</span></div>
+      </div>
+      <div class="info-block">
+        <span class="info-block-title">Situation</span>
+        <div class="info-field"><span class="info-label">Situation familiale</span><span class="info-val" id="i-sitfam">—</span></div>
+        <div class="info-field"><span class="info-label">Testament</span><span class="info-val" id="i-testament">—</span></div>
+        <div class="info-field"><span class="info-label">Type d'obsèques</span><span class="info-val" id="i-obseques">—</span></div>
+        <div class="info-field"><span class="info-label">Statut du dossier</span><span class="info-val" id="i-statut">—</span></div>
+        <div class="info-field"><span class="info-label">Référence</span><span class="info-val" id="i-ref">—</span></div>
+      </div>
+    </div>
+    <div style="background:var(--stone);border:1px solid var(--border);padding:24px 32px;text-align:center">
+      <p style="font-size:.88rem;color:var(--mist);font-style:italic;margin-bottom:16px">Pour modifier ces informations, contactez votre référent.</p>
+      <button onclick="showView('vue-messages',null)" style="background:transparent;border:1px solid var(--border2);color:var(--gold);font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;padding:12px 28px;cursor:pointer">Contacter mon référent →</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const SB_URL='https://VOTRE_PROJECT_ID.supabase.co';
+const SB_KEY='VOTRE_ANON_KEY';
+const{createClient}=supabase;
+const sb=createClient(SB_URL,SB_KEY);
+
+let DOSSIER=null,USER=null,DEMARCHES=[],MESSAGES_DATA=[],USER_PROFILE=null;
+let selectedCourriers=new Set();
+let allSelected=false;
+
+// ── CATALOGUE DÉMARCHES ──
+const CATALOGUE=[
+  {code:'etat_civil',titre:'Déclaration de décès à l\'État Civil',delai_label:'Dans les 24 heures',urgence_niveau:'urgent'},
+  {code:'obseques',titre:'Organisation des obsèques',delai_label:'Dans les 48–72 h',urgence_niveau:'urgent'},
+  {code:'notaire',titre:'Contact avec le notaire',delai_label:'Dans la semaine',urgence_niveau:'prioritaire'},
+  {code:'camti',titre:'CAMTI — Arrêt des prestations',delai_label:'Dans les 30 jours',urgence_niveau:'prioritaire'},
+  {code:'banques',titre:'Clôture des comptes bancaires',delai_label:'Dans les 30–60 j',urgence_niveau:'standard'},
+  {code:'fiscalite',titre:'Déclaration fiscale de succession',delai_label:'Dans les 6 mois',urgence_niveau:'standard'},
+  {code:'logement',titre:'Office de l\'Habitat & Logement',delai_label:'Variable',urgence_niveau:'standard'},
+  {code:'assurances',titre:'Résiliation des assurances',delai_label:'Dans les 30 jours',urgence_niveau:'standard'},
+  {code:'abonnements',titre:'Résiliation abonnements',delai_label:'Dans les 30 jours',urgence_niveau:'standard'},
+];
+
+const STATUS_ICONS={complete:'✓',en_cours:'◉',en_attente:'○',bloque:'✕'};
+const STATUS_LABELS={complete:'Complété',en_cours:'En cours',en_attente:'En attente',bloque:'Bloqué'};
+const DOCS_REQUIS=['Acte de décès','Pièce d\'identité du défunt','Pièce d\'identité du déclarant','Acte de naissance du défunt','Livret de famille','Relevés bancaires récents','Testament (si existant)','Contrat d\'assurance-vie (si existant)'];
+
+// ══════════════════════════════════════
+// DÉFINITION DES 9 COURRIERS + FORMULAIRES
+// ══════════════════════════════════════
+const COURRIERS_CATALOGUE=[
+  {
+    id:'etat_civil_lettre',
+    organisme:'Mairie de Monaco — État Civil',
+    titre:'Déclaration de décès',
+    desc:'Lettre de déclaration de décès à remettre à l\'officier d\'état civil dans les 24 heures.',
+    urgence:'urgent',types:['lettre'],
+    adresse:'Place de la Mairie, Monaco-Ville, 98000 Monaco',
+    objet:'Déclaration de décès — {NOM_DEFUNT}',
+    corps:`Madame, Monsieur l'Officier d'État Civil,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, demeurant au {ADRESSE_DECLARANT}, agissant en qualité de {QUALITE_DECLARANT}, ai l'honneur de porter à votre connaissance le décès de :
+
+Nom et prénom du défunt : {NOM_DEFUNT}
+Date de naissance : {DATE_NAISSANCE}
+Lieu de naissance : {LIEU_NAISSANCE}
+Nationalité : {NATIONALITE}
+Domicile : Monaco
+
+Décédé(e) le {DATE_DECES} à {HEURE_DECES} à {LIEU_DECES}.
+
+Je joins à la présente déclaration le certificat médical de décès établi par le médecin.
+
+En conséquence, je vous saurais gré de bien vouloir dresser l'acte de décès correspondant conformément aux dispositions légales en vigueur en Principauté de Monaco.
+
+Dans l'attente de votre aimable retour, je vous prie d'agréer, Madame, Monsieur l'Officier d'État Civil, l'expression de mes respectueuses salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}`
+  },
+  {
+    id:'notaire_lettre',
+    organisme:'Chambre des Notaires de Monaco',
+    titre:'Ouverture de succession',
+    desc:'Lettre de saisine du notaire pour l\'ouverture et le règlement de la succession.',
+    urgence:'prioritaire',types:['lettre'],
+    adresse:'1 Rue Colonel Bellando de Castro, 98000 Monaco',
+    objet:'Ouverture de succession — {NOM_DEFUNT} — Décédé(e) le {DATE_DECES}',
+    corps:`Maître,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, agissant en qualité de {QUALITE_DECLARANT} de {NOM_DEFUNT}, vous contacte afin de vous confier le règlement de la succession de :
+
+Identité du défunt :
+- Nom et prénom : {NOM_DEFUNT}
+- Date de naissance : {DATE_NAISSANCE}
+- Date et lieu du décès : {DATE_DECES} — {LIEU_DECES}
+- Nationalité : {NATIONALITE}
+- Situation familiale : {SITUATION_FAMILIALE}
+
+Existence d'un testament : {TESTAMENT}
+
+Je vous serais reconnaissant(e) de bien vouloir me contacter afin de convenir d'un premier rendez-vous pour l'ouverture du dossier de succession et l'inventaire du patrimoine.
+
+Je me tiens disponible pour vous fournir tout document complémentaire nécessaire.
+
+Veuillez agréer, Maître, l'expression de mes respectueuses salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}
+Email : {EMAIL_DECLARANT}`
+  },
+  {
+    id:'camti_arret',
+    organisme:'CAMTI — Sécurité Sociale Monaco',
+    titre:'Cessation des prestations',
+    desc:'Déclaration de décès et demande d\'arrêt des prestations sociales et de pension versées au défunt.',
+    urgence:'prioritaire',types:['lettre','formulaire'],
+    adresse:'11 Rue du Gabian, 98000 Monaco',
+    objet:'Déclaration de décès et cessation des prestations — {NOM_DEFUNT}',
+    corps:`Madame, Monsieur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, vous informe du décès de :
+
+Assuré(e) : {NOM_DEFUNT}
+Date de naissance : {DATE_NAISSANCE}
+Numéro d'assuré social : ____________________
+Date du décès : {DATE_DECES}
+Lieu du décès : {LIEU_DECES}
+
+Par la présente, je vous demande de bien vouloir :
+1. Procéder à l'arrêt immédiat de l'ensemble des prestations, pensions et allocations versées à l'assuré(e) décédé(e) ;
+2. M'indiquer les démarches à effectuer concernant un éventuel capital décès ou pension de réversion ;
+3. Me communiquer le solde éventuel des prestations dues jusqu'à la date du décès.
+
+Je joins à ce courrier une copie de l'acte de décès ainsi que ma pièce d'identité.
+
+Restant à votre disposition pour tout renseignement complémentaire, veuillez agréer, Madame, Monsieur, l'expression de mes sincères salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Adresse : {ADRESSE_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+  {
+    id:'banque_cloture',
+    organisme:'Établissements bancaires',
+    titre:'Clôture des comptes bancaires',
+    desc:'Lettre de demande de clôture des comptes et de libération des avoirs du défunt.',
+    urgence:'standard',types:['lettre'],
+    adresse:'[Indiquer l\'adresse de la banque concernée]',
+    objet:'Décès de {NOM_DEFUNT} — Demande de clôture de comptes',
+    corps:`Madame, Monsieur le Directeur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, vous contacte afin de vous informer du décès de {NOM_DEFUNT}, titulaire de compte(s) dans votre établissement.
+
+Décédé(e) le {DATE_DECES} à {LIEU_DECES}.
+
+En ma qualité de {QUALITE_DECLARANT}, et conformément aux dispositions légales relatives au droit des successions, je vous demande de bien vouloir :
+
+1. Bloquer l'ensemble des comptes, avoirs et valeurs détenus au nom du défunt ;
+2. M'indiquer la liste et les soldes de l'ensemble des comptes détenus ;
+3. Procéder à la clôture de ces comptes et au transfert des fonds vers le compte de succession dès la production des documents notariaux requis ;
+4. Me signaler l'existence de tout coffre-fort, nantissement ou engagement en cours.
+
+Je joins à ce courrier :
+- L'acte de décès original ou certifié conforme
+- Ma pièce d'identité en cours de validité
+- [Acte notarié / Attestation successorale — à joindre ultérieurement]
+
+Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur le Directeur, l'expression de mes respectueuses salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+  {
+    id:'fisc_succession',
+    organisme:'Direction des Services Fiscaux',
+    titre:'Déclaration de succession',
+    desc:'Lettre d\'accompagnement de la déclaration fiscale de succession auprès des services fiscaux monégasques.',
+    urgence:'standard',types:['lettre','formulaire'],
+    adresse:'57 Rue Grimaldi, 98000 Monaco',
+    objet:'Déclaration de succession — {NOM_DEFUNT} — Décédé(e) le {DATE_DECES}',
+    corps:`Madame, Monsieur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, agissant en qualité de {QUALITE_DECLARANT}, vient, par la présente, déposer la déclaration de succession relative au décès de :
+
+Identité du de cujus :
+- Nom et prénom : {NOM_DEFUNT}
+- Date et lieu de naissance : {DATE_NAISSANCE} — {LIEU_NAISSANCE}
+- Date et lieu du décès : {DATE_DECES} — {LIEU_DECES}
+- Domicile fiscal : Monaco
+- Nationalité : {NATIONALITE}
+
+Composition de la succession :
+- Situation matrimoniale : {SITUATION_FAMILIALE}
+- Existence d'un testament : {TESTAMENT}
+- Nature des biens : [À compléter avec votre notaire]
+
+Conformément aux dispositions du droit fiscal monégasque, je vous remets ci-joint la déclaration complète de succession accompagnée des pièces justificatives requises.
+
+Je reste à votre disposition pour tout document complémentaire.
+
+Veuillez agréer, Madame, Monsieur, l'expression de mes respectueuses salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}`
+  },
+  {
+    id:'habitat_logement',
+    organisme:'Office de l\'Habitat de Monaco',
+    titre:'Notification de décès — Logement',
+    desc:'Lettre de notification du décès concernant un logement soumis aux dispositions de l\'Office de l\'Habitat.',
+    urgence:'standard',types:['lettre'],
+    adresse:'6 Rue Emile de Loth, 98000 Monaco',
+    objet:'Notification de décès — Logement — {NOM_DEFUNT}',
+    corps:`Madame, Monsieur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, vous informe du décès de {NOM_DEFUNT}, survenu le {DATE_DECES} à {LIEU_DECES}.
+
+Le défunt / La défunte était titulaire d'un logement dont les références sont les suivantes :
+- Adresse : ____________________
+- Numéro de convention / dossier : ____________________
+
+Par la présente, je vous demande de bien vouloir :
+1. Prendre acte du décès du titulaire ;
+2. M'indiquer les démarches à effectuer concernant la situation du logement ;
+3. Me communiquer les délais et conditions applicables.
+
+Je joins à ce courrier l'acte de décès ainsi que ma pièce d'identité.
+
+Dans l'attente de votre retour, je vous prie d'agréer, Madame, Monsieur, l'expression de mes sincères salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+  {
+    id:'assurance_resiliation',
+    organisme:'Compagnies d\'assurance',
+    titre:'Résiliation des contrats d\'assurance',
+    desc:'Lettre de résiliation des contrats d\'assurance (habitation, véhicule, santé) suite au décès.',
+    urgence:'standard',types:['lettre'],
+    adresse:'[Indiquer l\'adresse de l\'assureur concerné]',
+    objet:'Résiliation de contrat suite au décès de {NOM_DEFUNT}',
+    corps:`Madame, Monsieur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, vous informe du décès de l'assuré(e) :
+
+Nom et prénom : {NOM_DEFUNT}
+Date du décès : {DATE_DECES}
+Numéro de contrat : ____________________
+Type de contrat : ____________________
+
+Conformément aux dispositions légales et contractuelles, je vous demande de procéder à la résiliation du ou des contrats d'assurance souscrits au nom du défunt à compter de la date du décès, et de me communiquer :
+
+1. Le solde des cotisations éventuellement dues ou à rembourser ;
+2. Les conditions de règlement de tout sinistre en cours ;
+3. Pour les contrats d'assurance-vie : les modalités de versement du capital aux bénéficiaires désignés.
+
+Je joins à ce courrier l'acte de décès et ma pièce d'identité.
+
+Veuillez agréer, Madame, Monsieur, l'expression de mes sincères salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+  {
+    id:'abonnements_resiliation',
+    organisme:'Opérateurs & Fournisseurs',
+    titre:'Résiliation des abonnements',
+    desc:'Lettre type de résiliation des abonnements (téléphone, internet, eau, électricité, presse…)',
+    urgence:'standard',types:['lettre'],
+    adresse:'[Indiquer l\'adresse du fournisseur concerné]',
+    objet:'Résiliation d\'abonnement suite au décès — {NOM_DEFUNT}',
+    corps:`Madame, Monsieur,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, vous informe du décès de votre abonné(e) :
+
+Nom et prénom : {NOM_DEFUNT}
+Date du décès : {DATE_DECES}
+Numéro d'abonné / de contrat : ____________________
+Type d'abonnement : ____________________
+
+Je vous demande de bien vouloir procéder à la résiliation de l'abonnement souscrit à son nom, avec effet à la date du décès, et de m'adresser :
+- La confirmation de résiliation ;
+- Le solde du compte (remboursement ou régularisation) ;
+- La facture de solde de tout compte.
+
+Je joins à ce courrier l'acte de décès et ma pièce d'identité.
+
+Veuillez agréer, Madame, Monsieur, l'expression de mes sincères salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+  {
+    id:'tribunal_succession',
+    organisme:'Tribunal de Première Instance',
+    titre:'Déclaration de succession judiciaire',
+    desc:'Lettre pour les démarches judiciaires nécessaires au règlement de la succession.',
+    urgence:'standard',types:['lettre'],
+    adresse:'5 Rue Colonel Bellando de Castro, 98000 Monaco',
+    objet:'Succession de {NOM_DEFUNT} — Décédé(e) le {DATE_DECES}',
+    corps:`Monsieur le Président,
+
+Je soussigné(e) {PRENOM_DECLARANT} {NOM_DECLARANT}, agissant en qualité de {QUALITE_DECLARANT}, vient vous informer du décès de :
+
+Nom et prénom : {NOM_DEFUNT}
+Date et lieu du décès : {DATE_DECES} — {LIEU_DECES}
+Nationalité : {NATIONALITE}
+Situation familiale : {SITUATION_FAMILIALE}
+
+Dans le cadre du règlement de la succession, et conformément aux dispositions du droit monégasque, je sollicite votre juridiction pour [préciser la demande : désignation d'un mandataire / ouverture d'une succession vacante / autre].
+
+Je reste à votre disposition pour vous fournir tout document complémentaire et vous prie d'agréer, Monsieur le Président, l'expression de mes respectueuses salutations.
+
+Fait à Monaco, le {DATE_JOUR}
+
+Signature : ____________________
+{PRENOM_DECLARANT} {NOM_DECLARANT}
+Tél. : {TELEPHONE_DECLARANT}`
+  },
+];
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='auth.html';return}
+  USER=session.user;
+
+  const[{data:dossier},{data:prof}]=await Promise.all([
+    sb.from('dossiers').select('*').eq('declarant_id',USER.id).single(),
+    sb.from('profiles').select('*').eq('id',USER.id).single()
+  ]);
+  DOSSIER=dossier; USER_PROFILE=prof;
+
+  if(DOSSIER){
+    const[{data:dems},{data:msgs}]=await Promise.all([
+      sb.from('dossier_demarches').select('*').eq('dossier_id',DOSSIER.id),
+      sb.from('messages').select('*').eq('dossier_id',DOSSIER.id).order('created_at')
+    ]);
+    DEMARCHES=dems||[]; MESSAGES_DATA=msgs||[];
+
+    if(DOSSIER.referent_id){
+      const{data:ref}=await sb.from('profiles').select('nom,prenom').eq('id',DOSSIER.referent_id).single();
+      if(ref){
+        document.getElementById('ref-name').textContent=ref.prenom+' '+ref.nom;
+        document.getElementById('ref-notif').textContent=ref.prenom+' '+ref.nom;
+      }
+    }
+  }
+
+  document.getElementById('loading-state').style.display='none';
+
+  if(!DOSSIER){renderNoDossier();return;}
+
+  renderSuivi();
+  renderCourriers();
+  renderDocs();
+  renderMessages();
+  renderInfos();
+  document.getElementById('vue-suivi').classList.add('active');
+
+  // Realtime
+  sb.channel('msgs-'+DOSSIER.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:'dossier_id=eq.'+DOSSIER.id},
+      p=>{MESSAGES_DATA.push(p.new);renderMessages()})
+    .subscribe();
+}
+
+// ══════════════════════════════════════
+// GÉNÉRATION PDF — MOTEUR PRINCIPAL
+// ══════════════════════════════════════
+function getDossierData(){
+  if(!DOSSIER)return{};
+  const fmt=d=>{
+    if(!d)return '____________________';
+    try{return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});}
+    catch{return d;}
+  };
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+
+  return{
+    NOM_DEFUNT:(DOSSIER.defunt_prenom||'')+(DOSSIER.defunt_nom?' '+DOSSIER.defunt_nom:'') || '____________________',
+    PRENOM_DEFUNT:DOSSIER.defunt_prenom||'____________________',
+    NOM_FAMILLE_DEFUNT:DOSSIER.defunt_nom||'____________________',
+    DATE_NAISSANCE:fmt(DOSSIER.defunt_naissance),
+    LIEU_NAISSANCE:DOSSIER.defunt_lieu_naissance||'____________________',
+    DATE_DECES:fmt(DOSSIER.defunt_deces),
+    HEURE_DECES:DOSSIER.defunt_heure_deces||'____________________',
+    LIEU_DECES:DOSSIER.defunt_lieu_deces||'Monaco',
+    NATIONALITE:DOSSIER.defunt_nationalite||'____________________',
+    SITUATION_FAMILIALE:DOSSIER.defunt_situation_familiale||'____________________',
+    TESTAMENT:DOSSIER.defunt_testament?'Oui — testament déposé chez notaire':'Non / À vérifier',
+    PRENOM_DECLARANT:USER_PROFILE?.prenom||'____________________',
+    NOM_DECLARANT:USER_PROFILE?.nom||'____________________',
+    ADRESSE_DECLARANT:DOSSIER.declarant_adresse||'____________________',
+    TELEPHONE_DECLARANT:USER_PROFILE?.telephone||'____________________',
+    EMAIL_DECLARANT:USER?.email||'____________________',
+    QUALITE_DECLARANT:DOSSIER.declarant_qualite||'ayant droit',
+    DATE_JOUR:today,
+    REFERENCE:DOSSIER.reference||'____________________',
+  };
+}
+
+function remplirTemplate(texte, data){
+  let result=texte;
+  Object.entries(data).forEach(([k,v])=>{
+    result=result.replace(new RegExp('{'+k+'}','g'),v||'____________________');
+  });
+  return result;
+}
+
+function genererPDF(courrier){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const data=getDossierData();
+
+  const pageW=210,pageH=297;
+  const marginL=25,marginR=25,marginT=30,marginB=25;
+  const contentW=pageW-marginL-marginR;
+  let y=marginT;
+
+  // Palette couleurs
+  const goldR=201,goldG=169,goldB=110;
+  const inkR=20,inkG=18,inkB=16;
+  const mistR=122,mistG=114,mistB=104;
+
+  // ── EN-TÊTE ──
+  // Ligne dorée top
+  doc.setDrawColor(goldR,goldG,goldB);
+  doc.setLineWidth(0.5);
+  doc.line(marginL,18,pageW-marginR,18);
+
+  // Logo LEVAMEN
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.setTextColor(goldR,goldG,goldB);
+  doc.setCharSpace(3);
+  doc.text('LEVAMEN',marginL,y);
+  doc.setCharSpace(0);
+
+  // Tagline
+  doc.setFont('helvetica','italic');
+  doc.setFontSize(7);
+  doc.setTextColor(mistR,mistG,mistB);
+  doc.text('Curam tollimus, memoriam servas',marginL,y+5);
+
+  // Référence dossier (droite)
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(mistR,mistG,mistB);
+  doc.text('Réf. : '+data.REFERENCE,pageW-marginR,y,{align:'right'});
+  doc.text('Monaco, le '+data.DATE_JOUR,pageW-marginR,y+5,{align:'right'});
+
+  y+=18;
+
+  // Ligne séparatrice
+  doc.setDrawColor(goldR,goldG,goldB);
+  doc.setLineWidth(0.2);
+  doc.line(marginL,y,pageW-marginR,y);
+  y+=10;
+
+  // ── DESTINATAIRE (bloc adresse) ──
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9);
+  doc.setTextColor(inkR,inkG,inkB);
+  const adresse=remplirTemplate(courrier.adresse,data);
+  const orgLines=[courrier.organisme,...adresse.split(',').map(s=>s.trim())];
+  orgLines.forEach(line=>{
+    doc.text(line,pageW-marginR-60,y);
+    y+=5;
+  });
+  y+=5;
+
+  // ── OBJET ──
+  const objet=remplirTemplate(courrier.objet,data);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(inkR,inkG,inkB);
+  doc.text('Objet : ',marginL,y);
+  doc.setFont('helvetica','normal');
+  const objetWidth=doc.getTextWidth('Objet : ');
+  const objetLines=doc.splitTextToSize(objet,contentW-objetWidth);
+  doc.text(objetLines,marginL+objetWidth,y);
+  y+=objetLines.length*5+8;
+
+  // Ligne sous objet
+  doc.setDrawColor(200,200,200);
+  doc.setLineWidth(0.1);
+  doc.line(marginL,y-4,pageW-marginR,y-4);
+
+  // ── CORPS DU COURRIER ──
+  const corpsRempli=remplirTemplate(courrier.corps,data);
+  const paragraphes=corpsRempli.split('\n');
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(inkR,inkG,inkB);
+
+  paragraphes.forEach(para=>{
+    if(para.trim()===''){
+      y+=4;
+    } else {
+      // Détecter les numéros de liste
+      const isListItem=/^\d+\./.test(para.trim());
+      const indent=isListItem?marginL+4:marginL;
+      const width=contentW-(isListItem?4:0);
+
+      const lines=doc.splitTextToSize(para.trim(),width);
+      lines.forEach((line,li)=>{
+        if(y>pageH-marginB-20){
+          doc.addPage();
+          y=marginT;
+          // Mini entête page suivante
+          doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(mistR,mistG,mistB);
+          doc.text('LEVAMEN — '+courrier.titre+' — Suite',marginL,15);
+          doc.setDrawColor(goldR,goldG,goldB);doc.line(marginL,18,pageW-marginR,18);
+          y=25;
+        }
+        doc.text(line,indent,y);
+        y+=5.5;
+      });
+    }
+  });
+
+  // ── PIED DE PAGE ──
+  const totalPages=doc.getNumberOfPages();
+  for(let p=1;p<=totalPages;p++){
+    doc.setPage(p);
+    doc.setDrawColor(goldR,goldG,goldB);
+    doc.setLineWidth(0.2);
+    doc.line(marginL,pageH-15,pageW-marginR,pageH-15);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(mistR,mistG,mistB);
+    doc.text('LEVAMEN — Association d\'aide aux familles — Monaco',marginL,pageH-10);
+    doc.text('Page '+p+' / '+totalPages,pageW-marginR,pageH-10,{align:'right'});
+  }
+
+  return doc;
+}
+
+async function genererTout(){
+  const btn=document.getElementById('btn-gen-tout');
+  btn.disabled=true;
+  showSpinner(true);
+  hideAlerts();
+
+  try{
+    const JSZip=window.JSZip;
+    const zip=new JSZip();
+    const folder=zip.folder('LEVAMEN_Courriers');
+
+    for(const courrier of COURRIERS_CATALOGUE){
+      const pdf=genererPDF(courrier);
+      const blob=pdf.output('blob');
+      folder.file(sanitizeFilename(courrier.titre)+'.pdf',blob);
+      await sleep(50);
+    }
+
+    const content=await zip.generateAsync({type:'blob'});
+    downloadBlob(content,'LEVAMEN_Tous_Courriers.zip');
+    showSuccess('✅ '+COURRIERS_CATALOGUE.length+' courriers générés et téléchargés dans un ZIP.');
+  }catch(e){
+    console.error(e);
+  }finally{
+    btn.disabled=false;
+    showSpinner(false);
+  }
+}
+
+async function genererSelection(){
+  if(selectedCourriers.size===0){
+    alert('Sélectionnez au moins un courrier.');return;
+  }
+  showSpinner(true);
+  hideAlerts();
+
+  const selected=COURRIERS_CATALOGUE.filter(c=>selectedCourriers.has(c.id));
+
+  try{
+    if(selected.length===1){
+      // Téléchargement direct PDF
+      const pdf=genererPDF(selected[0]);
+      pdf.save(sanitizeFilename(selected[0].titre)+'.pdf');
+      showSuccess('✅ Courrier téléchargé : '+selected[0].titre);
+    } else {
+      const JSZip=window.JSZip;
+      const zip=new JSZip();
+      const folder=zip.folder('LEVAMEN_Courriers');
+      for(const courrier of selected){
+        const pdf=genererPDF(courrier);
+        folder.file(sanitizeFilename(courrier.titre)+'.pdf',pdf.output('blob'));
+        await sleep(50);
+      }
+      const content=await zip.generateAsync({type:'blob'});
+      downloadBlob(content,'LEVAMEN_Courriers_Selection.zip');
+      showSuccess('✅ '+selected.length+' courriers téléchargés.');
+    }
+  }catch(e){console.error(e);}
+  finally{showSpinner(false);}
+}
+
+function genererSingle(id){
+  const courrier=COURRIERS_CATALOGUE.find(c=>c.id===id);
+  if(!courrier)return;
+  const pdf=genererPDF(courrier);
+  pdf.save(sanitizeFilename(courrier.titre)+'.pdf');
+  showSuccess('✅ Courrier téléchargé : '+courrier.titre);
+}
+
+// ── HELPERS PDF ──
+function sanitizeFilename(s){return s.replace(/[^a-zA-Z0-9\u00C0-\u024F\s_-]/g,'').replace(/\s+/g,'_');}
+function downloadBlob(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function showSpinner(on){document.getElementById('gen-spinner').classList.toggle('show',on);}
+function showSuccess(msg){const el=document.getElementById('alert-success');el.classList.add('show');document.getElementById('alert-success-text').textContent=msg;setTimeout(()=>el.classList.remove('show'),5000);}
+function hideAlerts(){document.getElementById('alert-success').classList.remove('show');}
+
+function toggleSelectAll(){
+  allSelected=!allSelected;
+  document.getElementById('select-all-btn').textContent=allSelected?'Tout désélectionner':'Tout sélectionner';
+  COURRIERS_CATALOGUE.forEach(c=>{
+    const card=document.getElementById('card-'+c.id);
+    if(allSelected){selectedCourriers.add(c.id);card?.classList.add('selected');}
+    else{selectedCourriers.delete(c.id);card?.classList.remove('selected');}
+  });
+  updateSelectionCount();
+}
+
+function toggleCourrier(id){
+  const card=document.getElementById('card-'+id);
+  if(selectedCourriers.has(id)){selectedCourriers.delete(id);card?.classList.remove('selected');}
+  else{selectedCourriers.add(id);card?.classList.add('selected');}
+  updateSelectionCount();
+}
+
+function updateSelectionCount(){
+  const btn=document.getElementById('btn-gen-selection');
+  const n=selectedCourriers.size;
+  btn.textContent=n===0?'⬇ Générer les courriers sélectionnés':`⬇ Générer ${n} courrier${n>1?'s':''} sélectionné${n>1?'s':''}`;
+}
+
+// ══════════════════════════════════════
+// RENDER FONCTIONS
+// ══════════════════════════════════════
+function renderCourriers(){
+  const grid=document.getElementById('courriers-grid');
+  grid.innerHTML=COURRIERS_CATALOGUE.map(c=>`
+    <div class="courrier-card" id="card-${c.id}" onclick="toggleCourrier('${c.id}')">
+      <div class="cc-check" title="Sélectionner">✓</div>
+      <span class="cc-org">${c.organisme}</span>
+      <div class="cc-title">${c.titre}</div>
+      <p class="cc-desc">${c.desc}</p>
+      <div class="cc-meta">
+        <span class="cc-tag ${c.urgence}">${c.urgence}</span>
+        ${c.types.includes('lettre')?'<span class="cc-tag lettre">Lettre officielle</span>':''}
+        ${c.types.includes('formulaire')?'<span class="cc-tag formulaire">Formulaire</span>':''}
+      </div>
+      <button onclick="event.stopPropagation();genererSingle('${c.id}')"
+        style="margin-top:16px;background:transparent;border:1px solid var(--border2);color:var(--gold2);font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.15em;text-transform:uppercase;padding:6px 14px;cursor:pointer;width:100%;transition:background .2s,color .2s"
+        onmouseover="this.style.background='var(--gold)';this.style.color='var(--ink)'"
+        onmouseout="this.style.background='transparent';this.style.color='var(--gold2)'">
+        ⬇ Télécharger ce courrier
+      </button>
+    </div>`).join('');
+}
+
+function renderNoDossier(){
+  document.getElementById('vue-suivi').innerHTML=`
+    <div style="text-align:center;padding:80px 40px">
+      <p style="font-size:2rem;margin-bottom:24px">🕊️</p>
+      <p class="page-title" style="margin-bottom:16px">Aucun dossier ouvert</p>
+      <p style="color:var(--mist);font-style:italic;margin-bottom:32px">Votre dossier n'a pas encore été créé.</p>
+      <a href="index.html#formulaire" style="font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);border:1px solid var(--border2);padding:14px 32px;text-decoration:none">Ouvrir un dossier →</a>
+    </div>`;
+  document.getElementById('vue-suivi').classList.add('active');
+}
+
+function renderSuivi(){
+  document.getElementById('page-title-suivi').textContent='Bonjour, '+(USER_PROFILE?.prenom||'');
+  document.getElementById('dossier-ref').textContent=DOSSIER.reference||'LVN-—';
+  const total=CATALOGUE.length;
+  const done=DEMARCHES.filter(d=>d.statut==='complete').length;
+  const encours=DEMARCHES.filter(d=>d.statut==='en_cours').length;
+  const urgent=DEMARCHES.filter((d,i)=>d.statut!=='complete'&&CATALOGUE[i]?.urgence_niveau==='urgent').length;
+  const pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('ov-pct').textContent=pct+'%';
+  document.getElementById('ov-pct-sub').textContent=done+'/'+total+' démarches complétées';
+  document.getElementById('ov-urgent').textContent=urgent;
+  document.getElementById('ov-encours').textContent=encours;
+  document.getElementById('ov-done').textContent=done;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  setTimeout(()=>{document.getElementById('prog-bar').style.width=pct+'%'},100);
+  if(urgent>0)document.getElementById('urgence-bar').style.display='flex';
+  const list=document.getElementById('dem-list');
+  list.innerHTML=CATALOGUE.map((cat,i)=>{
+    const dem=DEMARCHES.find(d=>d.demarche_code===cat.code);
+    const st=dem?.statut||'en_attente';
+    return`<div class="dem-row">
+      <div class="dem-status-icon ${st}">${STATUS_ICONS[st]||'○'}</div>
+      <div class="dem-name">${cat.titre}<small>${cat.delai_label}</small></div>
+      <div class="dem-delay">${cat.urgence_niveau}</div>
+      <div><span class="dem-badge ${st}">${STATUS_LABELS[st]}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDocs(){
+  const docs=[
+    {nom:'Certificat médical de décès',valide:true,date:'—'},
+    {nom:'Pièce d\'identité déclarant',valide:true,date:'—'},
+  ];
+  document.getElementById('doc-count').textContent=docs.length+' document(s)';
+  document.getElementById('doc-list').innerHTML=docs.map(d=>`
+    <div class="doc-item">
+      <span class="doc-icon">📄</span>
+      <span class="doc-name">${d.nom}</span>
+      <span class="doc-meta">${d.date}</span>
+      <span class="doc-status ${d.valide?'ok':'wait'}">${d.valide?'Validé':'En attente'}</span>
+    </div>`).join('');
+  document.getElementById('checklist-docs').innerHTML=DOCS_REQUIS.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <span style="color:${i<2?'var(--green)':'var(--mist2)'}">${i<2?'✓':'○'}</span>
+      <span style="font-size:.88rem;color:${i<2?'var(--cream)':'var(--mist)'}">${d}</span>
+    </div>`).join('');
+}
+
+function renderMessages(){
+  const thread=document.getElementById('msg-thread');
+  if(!MESSAGES_DATA.length){
+    thread.innerHTML=`<div class="msg-bubble them"><div class="msg-author">LEVAMEN — Votre référent</div><div class="msg-text">Bonjour, je suis votre référent LEVAMEN. N'hésitez pas à me contacter pour toute question.</div><div class="msg-time">Aujourd'hui</div></div>`;
+    return;
+  }
+  thread.innerHTML=MESSAGES_DATA.map(m=>{
+    const isMe=m.expediteur_id===USER.id;
+    const date=new Date(m.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return`<div class="msg-bubble ${isMe?'me':'them'}">
+      <div class="msg-author">${isMe?'Vous':'Votre référent'}</div>
+      <div class="msg-text">${m.contenu}</div>
+      <div class="msg-time">${date}</div>
+    </div>`;
+  }).join('');
+  thread.scrollTop=thread.scrollHeight;
+}
+
+function renderInfos(){
+  if(!DOSSIER)return;
+  const fmt=d=>d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  document.getElementById('i-nom').textContent=(DOSSIER.defunt_prenom||'')+' '+(DOSSIER.defunt_nom||'');
+  document.getElementById('i-naissance').textContent=fmt(DOSSIER.defunt_naissance);
+  document.getElementById('i-deces').textContent=fmt(DOSSIER.defunt_deces);
+  document.getElementById('i-lieu').textContent=DOSSIER.defunt_lieu_deces||'—';
+  document.getElementById('i-nat').textContent=DOSSIER.defunt_nationalite||'—';
+  document.getElementById('i-sitfam').textContent=DOSSIER.defunt_situation_familiale||'—';
+  document.getElementById('i-testament').textContent=DOSSIER.defunt_testament?'Oui':'Non';
+  document.getElementById('i-obseques').textContent=DOSSIER.obseques_type||'—';
+  document.getElementById('i-statut').textContent=DOSSIER.statut||'—';
+  document.getElementById('i-ref').textContent=DOSSIER.reference||'—';
+}
+
+async function sendMsg(){
+  const input=document.getElementById('msg-input');
+  const txt=input.value.trim();
+  if(!txt||!DOSSIER)return;
+  input.value='';
+  const{error}=await sb.from('messages').insert({dossier_id:DOSSIER.id,expediteur_id:USER.id,contenu:txt});
+  if(!error){MESSAGES_DATA.push({expediteur_id:USER.id,contenu:txt,created_at:new Date().toISOString()});renderMessages();}
+}
+
+function handleUpload(input){
+  const files=Array.from(input.files);
+  const list=document.getElementById('doc-list');
+  files.forEach(f=>{
+    list.innerHTML+=`<div class="doc-item"><span class="doc-icon">📄</span><span class="doc-name">${f.name}</span><span class="doc-meta">${(f.size/1024).toFixed(0)} Ko</span><span class="doc-status wait">En attente</span></div>`;
+  });
+  document.getElementById('doc-count').textContent=list.querySelectorAll('.doc-item').length+' document(s)';
+}
+
+function showView(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sb-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el)el.classList.add('active');
+}
+
+async function logout(){await sb.auth.signOut();window.location.href='auth.html';}
+
+
+// ── Mobile nav ──
+function toggleDrawer(){
+  const d=document.getElementById('mob-drawer');
+  const b=document.getElementById('mob-btn');
+  const open=d.classList.toggle('open');
+  b.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeMobDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-btn').classList.remove('open');
+  document.body.style.overflow='';
+}
+function mobileNav(id){showView(id,null);}
+
+init();
+</script>
+</body>
+</html>

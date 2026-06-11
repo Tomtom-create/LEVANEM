@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LEVAMEN — Tableau de bord équipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#0d0b09;--stone:#181512;--stone2:#1e1b16;--stone3:#252119;--stone4:#2a2820;--mist:#a09888;--mist2:#7a7060;--gold:#d4aa6a;--gold2:#b8883a;--gold3:#f0d898;--cream:#f8f2e0;--cream2:#ede4cc;--border:rgba(212,170,106,.18);--border2:rgba(212,170,106,.36);--red:#c0392b;--green:#27ae60;--orange:#e67e22}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cormorant Garamond',Georgia,serif;background:var(--ink);color:var(--cream);min-height:100vh;display:flex}
+
+/* ── SIDEBAR ── */
+.sidebar{width:280px;min-height:100vh;background:var(--stone);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto}
+.sb-logo{padding:28px;border-bottom:1px solid var(--border)}
+.sb-logo-name{font-family:'Cinzel',serif;font-size:1rem;letter-spacing:.4em;color:var(--gold);display:block}
+.sb-logo-role{font-size:.7rem;color:var(--mist);font-style:italic;margin-top:5px}
+.sb-user{padding:16px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sb-avatar{width:36px;height:36px;background:rgba(201,169,110,.15);border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);flex-shrink:0}
+.sb-user-info{}
+.sb-user-name{font-size:.9rem;color:var(--cream)}
+.sb-user-badge{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold2)}
+.sb-nav{padding:16px 0;flex:1}
+.sb-section{font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.25em;text-transform:uppercase;color:var(--mist2);padding:10px 28px 6px}
+.sb-item{display:flex;align-items:center;gap:12px;padding:11px 28px;color:var(--cream2);cursor:pointer;transition:color .2s,background .2s;border-left:2px solid transparent;font-size:.9rem}
+.sb-item:hover{color:var(--cream);background:rgba(255,255,255,.02)}
+.sb-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,169,110,.04)}
+.sb-item svg{opacity:.7;flex-shrink:0}
+.sb-item.active svg{opacity:1}
+.sb-badge{margin-left:auto;background:rgba(192,57,43,.2);color:#e07070;font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.1em;padding:2px 7px;border-radius:10px}
+.sb-stats{padding:20px 28px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sb-stat{text-align:center;padding:12px;background:rgba(201,169,110,.04);border:1px solid var(--border)}
+.sb-stat-val{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold);display:block}
+.sb-stat-lbl{font-family:'Cinzel',serif;font-size:.4rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist2);display:block;margin-top:3px}
+.sb-logout{padding:16px 28px;border-top:1px solid var(--border)}
+.sb-logout button{background:none;border:none;color:var(--mist);font-family:'Cormorant Garamond',serif;font-size:.85rem;cursor:pointer;font-style:italic;transition:color .2s}
+.sb-logout button:hover{color:var(--gold2)}
+
+/* ── MAIN ── */
+.main{margin-left:280px;flex:1;min-width:0}
+.topbar{padding:20px 40px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,13,11,.8);backdrop-filter:blur(10px);position:sticky;top:0;z-index:40}
+.topbar-title{font-family:'Cinzel',serif;font-size:.9rem;letter-spacing:.15em;color:var(--cream)}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.btn-sm{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;padding:9px 20px;cursor:pointer;transition:background .3s,color .3s;border:1px solid var(--border2);color:var(--gold);background:transparent}
+.btn-sm:hover{background:var(--gold);color:var(--ink)}
+.btn-sm.danger{border-color:rgba(192,57,43,.4);color:#e07070}
+.btn-sm.danger:hover{background:var(--red);color:var(--cream)}
+.search-bar{background:var(--stone2);border:1px solid var(--border);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.9rem;padding:8px 14px;outline:none;width:240px;transition:border-color .2s}
+.search-bar:focus{border-color:var(--border2)}
+.search-bar::placeholder{color:var(--mist2);font-style:italic}
+
+.content{padding:36px 40px}
+.view{display:none}.view.active{display:block}
+
+/* ── PAGE HEADER ── */
+.ph{margin-bottom:36px;display:flex;justify-content:space-between;align-items:flex-end}
+.ph-left{}
+.ph-eyebrow{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold2);display:block;margin-bottom:8px}
+.ph-title{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:300;letter-spacing:.08em;color:var(--cream)}
+
+/* ── KPI CARDS ── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:32px}
+.kpi{background:var(--stone2);padding:24px 28px}
+.kpi-label{font-family:'Cinzel',serif;font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist2);margin-bottom:10px;display:block}
+.kpi-val{font-family:'Cinzel',serif;font-size:2rem;font-weight:300;color:var(--gold);line-height:1}
+.kpi-sub{font-size:.76rem;color:var(--mist);margin-top:5px}
+.kpi-delta{font-family:'Cinzel',serif;font-size:.46rem;letter-spacing:.1em;margin-top:8px;display:inline-block;padding:2px 8px}
+.kpi-delta.up{background:rgba(39,174,96,.1);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.kpi-delta.down{background:rgba(192,57,43,.1);color:#e07070;border:1px solid rgba(192,57,43,.2)}
+
+/* ── TABLE DOSSIERS ── */
+.table-wrap{background:var(--stone2);border:1px solid var(--border);margin-bottom:32px;overflow-x:auto}
+.table-header{padding:20px 28px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.table-title{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream)}
+.table-filters{display:flex;gap:8px}
+.filter-btn{background:none;border:1px solid var(--border);color:var(--mist);font-family:'Cinzel',serif;font-size:.45rem;letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;cursor:pointer;transition:border-color .2s,color .2s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--border2);color:var(--gold)}
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--border)}
+th{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mist2);padding:14px 20px;text-align:left;font-weight:400;white-space:nowrap}
+td{padding:16px 20px;border-bottom:1px solid var(--border);font-size:.9rem;color:var(--cream)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.01)}
+.td-ref{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.08em;color:var(--gold2)}
+.td-name{color:var(--cream)}
+.td-name small{display:block;font-size:.78rem;color:var(--mist);margin-top:2px;font-style:italic}
+.td-badge{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;white-space:nowrap;display:inline-block}
+.td-badge.nouveau{background:rgba(201,169,110,.08);color:var(--gold2);border:1px solid var(--border)}
+.td-badge.en_cours{background:rgba(201,169,110,.12);color:var(--gold);border:1px solid var(--border2)}
+.td-badge.cloture{background:rgba(39,174,96,.08);color:var(--green);border:1px solid rgba(39,174,96,.2)}
+.td-badge.en_attente{background:rgba(230,126,34,.08);color:var(--orange);border:1px solid rgba(230,126,34,.2)}
+.td-pct{display:flex;align-items:center;gap:10px}
+.td-pct-bar{flex:1;height:3px;background:var(--stone4);min-width:60px}
+.td-pct-fill{height:100%;background:var(--gold);transition:width .4s}
+.td-pct-val{font-family:'Cinzel',serif;font-size:.52rem;color:var(--mist);min-width:32px}
+.td-actions{display:flex;gap:6px}
+.td-btn{background:none;border:1px solid var(--border);color:var(--mist);font-family:'Cinzel',serif;font-size:.42rem;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;cursor:pointer;transition:border-color .2s,color .2s}
+.td-btn:hover{border-color:var(--border2);color:var(--gold)}
+.td-urg{display:inline-block;width:8px;height:8px;border-radius:50%;background:#e07070;animation:pulse 2s infinite;margin-right:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── DOSSIER DETAIL (modal slide) ── */
+.detail-overlay{position:fixed;inset:0;background:rgba(10,8,6,.7);z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px)}
+.detail-overlay.open{opacity:1;pointer-events:all}
+.detail-panel{position:fixed;top:0;right:0;width:560px;height:100vh;background:var(--stone);border-left:1px solid var(--border);z-index:101;transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{padding:28px 32px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--stone);z-index:1}
+.dp-close{background:none;border:none;color:var(--mist);font-size:1.4rem;cursor:pointer;transition:color .2s;line-height:1}
+.dp-close:hover{color:var(--gold)}
+.dp-ref{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;color:var(--gold2);margin-bottom:6px;display:block}
+.dp-name{font-family:'Cinzel',serif;font-size:1.1rem;letter-spacing:.08em;color:var(--cream)}
+.dp-body{padding:28px 32px;flex:1}
+.dp-section{margin-bottom:28px}
+.dp-section-title{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold2);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:block}
+.dp-field{display:grid;grid-template-columns:120px 1fr;gap:10px;margin-bottom:10px}
+.dp-label{font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist2);line-height:1.5;padding-top:2px}
+.dp-val{font-size:.9rem;color:var(--cream2)}
+
+.dem-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.dem-item:last-child{border-bottom:none}
+.dem-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dem-dot.complete{background:var(--green)}
+.dem-dot.en_cours{background:var(--gold);box-shadow:0 0 6px rgba(201,169,110,.4)}
+.dem-dot.en_attente{background:var(--stone4);border:1px solid var(--border2)}
+.dem-dot.bloque{background:var(--red)}
+.dem-info{flex:1}
+.dem-info-title{font-size:.88rem;color:var(--cream)}
+.dem-info-delay{font-size:.76rem;color:var(--mist);font-style:italic}
+.dem-select{background:var(--stone3);border:1px solid var(--border);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.85rem;padding:6px 10px;outline:none;cursor:pointer}
+
+.dp-msg-thread{display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto;margin-bottom:12px;padding-right:4px}
+.dp-msg-thread::-webkit-scrollbar{width:3px}.dp-msg-thread::-webkit-scrollbar-track{background:var(--stone2)}.dp-msg-thread::-webkit-scrollbar-thumb{background:var(--border2)}
+.dp-msg{padding:10px 14px;max-width:90%}
+.dp-msg.them{background:var(--stone2);border:1px solid var(--border);align-self:flex-start}
+.dp-msg.me{background:rgba(201,169,110,.08);border:1px solid var(--border2);align-self:flex-end}
+.dp-msg-author{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist2);margin-bottom:4px}
+.dp-msg-text{font-size:.88rem;color:var(--cream2);line-height:1.5}
+.dp-msg-time{font-size:.72rem;color:var(--mist2);margin-top:5px;font-style:italic}
+.dp-compose{display:flex;gap:8px}
+.dp-input{flex:1;background:var(--stone2);border:1px solid var(--border);color:var(--cream);font-family:'Cormorant Garamond',serif;font-size:.9rem;padding:10px 14px;outline:none;transition:border-color .2s;resize:none;height:44px}
+.dp-input:focus{border-color:var(--border2)}
+.dp-send{background:transparent;border:1px solid var(--border2);color:var(--gold);font-family:'Cinzel',serif;font-size:.48rem;letter-spacing:.12em;padding:0 18px;cursor:pointer;transition:background .3s,color .3s}
+.dp-send:hover{background:var(--gold);color:var(--ink)}
+
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:16px}
+.loading-ring{width:36px;height:36px;border:1px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.2em;color:var(--mist2);text-transform:uppercase}
+
+/* ── ALERTES URGENTES ── */
+.alerts-list{display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.alert-row{display:flex;align-items:center;gap:16px;padding:14px 20px;background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.2)}
+.alert-row.warn{background:rgba(230,126,34,.06);border-color:rgba(230,126,34,.2)}
+.alert-row-icon{font-size:1rem;flex-shrink:0}
+.alert-row-text{flex:1;font-size:.88rem;color:var(--cream2);line-height:1.4}
+.alert-row-text strong{color:#e07070}
+.alert-row.warn .alert-row-text strong{color:var(--orange)}
+.alert-row-btn{font-family:'Cinzel',serif;font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;background:none;border:1px solid rgba(192,57,43,.4);color:#e07070;padding:5px 14px;cursor:pointer;transition:background .2s;white-space:nowrap}
+.alert-row-btn:hover{background:rgba(192,57,43,.15)}
+
+@media(max-width:1100px){.kpis{grid-template-columns:1fr 1fr}}
+/* ── Hamburger admin mobile ── */
+.mob-topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(13,11,9,.97);border-bottom:1px solid var(--border);padding:14px 20px;align-items:center;justify-content:space-between;backdrop-filter:blur(16px)}
+.mob-topbar.show{display:flex}
+.mob-logo{font-family:'Cinzel',serif;font-size:.9rem;letter-spacing:.4em;color:var(--gold);text-decoration:none}
+.mob-hamburger{display:flex;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.mob-hamburger span{display:block;width:22px;height:1px;background:var(--gold);transition:transform .3s,opacity .3s}
+.mob-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.mob-hamburger.open span:nth-child(2){opacity:0}
+.mob-hamburger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mob-drawer{display:none;position:fixed;inset:0;z-index:99;background:rgba(13,11,9,.98);flex-direction:column;padding:80px 32px 32px;gap:4px;overflow-y:auto}
+.mob-drawer.open{display:flex}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .mob-topbar{display:flex}
+  .main{margin-left:0}
+  .topbar{padding:12px 20px;padding-top:68px}
+  .content{padding:20px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .detail-panel{width:100%;max-width:100%}
+  .search-bar{width:160px}
+  table{font-size:.8rem}
+  th,td{padding:10px 12px}
+  .td-actions{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .kpis{grid-template-columns:1fr}
+  .topbar-actions{gap:8px}
+  .search-bar{width:120px;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile topbar admin -->
+<div class="mob-topbar" id="mob-topbar">
+  <a href="index.html" class="mob-logo">LEVAMEN</a>
+  <button class="mob-hamburger" id="mob-btn" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+<div class="mob-drawer" id="mob-drawer">
+  <div onclick="showView('vue-dash',null);closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">📊 Vue d'ensemble</div>
+  <div onclick="showView('vue-dossiers',null);closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">📁 Tous les dossiers</div>
+  <div onclick="showView('vue-messages',null);closeMobDrawer()" style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);color:var(--cream2);cursor:pointer;font-size:.95rem">💬 Messages</div>
+  <div onclick="logout()" style="display:flex;align-items:center;gap:14px;padding:14px 0;color:var(--mist);cursor:pointer;font-size:.9rem;font-style:italic;margin-top:auto">← Déconnexion</div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <span class="sb-logo-name">LEVAMEN</span>
+    <span class="sb-logo-role">Tableau de bord équipe</span>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar" id="sb-avatar">—</div>
+    <div class="sb-user-info">
+      <div class="sb-user-name" id="sb-username">—</div>
+      <div class="sb-user-badge" id="sb-role">—</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Gestion</div>
+    <div class="sb-item active" onclick="showView('vue-dash',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Vue d'ensemble
+    </div>
+    <div class="sb-item" onclick="showView('vue-dossiers',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+      Tous les dossiers
+      <span class="sb-badge" id="badge-urgents">0</span>
+    </div>
+    <div class="sb-section">Communication</div>
+    <div class="sb-item" onclick="showView('vue-messages',this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+    </div>
+  </nav>
+  <div class="sb-stats">
+    <div class="sb-stat"><span class="sb-stat-val" id="sb-total">0</span><span class="sb-stat-lbl">Dossiers</span></div>
+    <div class="sb-stat"><span class="sb-stat-val" id="sb-actifs" style="color:var(--green)">0</span><span class="sb-stat-lbl">Actifs</span></div>
+  </div>
+  <div class="sb-logout"><button onclick="logout()">← Déconnexion</button></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
+    <div class="topbar-actions">
+      <input type="text" class="search-bar" placeholder="Rechercher un dossier…" oninput="filterDossiers(this.value)"/>
+      <button class="btn-sm" onclick="showView('vue-dossiers',null)">+ Nouveau dossier</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- LOADING -->
+    <div class="loading" id="loading-state">
+      <div class="loading-ring"></div>
+      <p>Chargement…</p>
+    </div>
+
+    <!-- VUE D'ENSEMBLE -->
+    <div class="view" id="vue-dash">
+      <div class="ph">
+        <div class="ph-left">
+          <span class="ph-eyebrow">Tableau de bord</span>
+          <h1 class="ph-title" id="dash-greeting">Bonjour</h1>
+        </div>
+        <div style="font-size:.8rem;color:var(--mist);font-style:italic" id="dash-date"></div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span class="kpi-label">Dossiers totaux</span><div class="kpi-val" id="kpi-total">0</div><p class="kpi-sub">depuis le début</p></div>
+        <div class="kpi"><span class="kpi-label">En cours</span><div class="kpi-val" id="kpi-cours">0</div><span class="kpi-delta up" id="kpi-cours-d">actifs</span></div>
+        <div class="kpi"><span class="kpi-label">Urgent — action requise</span><div class="kpi-val" id="kpi-urg" style="color:#e07070">0</div><p class="kpi-sub">dans les 24h</p></div>
+        <div class="kpi"><span class="kpi-label">Clôturés</span><div class="kpi-val" id="kpi-done" style="color:var(--green)">0</div><p class="kpi-sub">dossiers terminés</p></div>
+      </div>
+
+      <div class="alerts-list" id="alerts-list"></div>
+
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Dossiers récents</span>
+        </div>
+        <table>
+          <thead><tr><th>Référence</th><th>Défunt</th><th>Déclarant</th><th>Statut</th><th>Progression</th><th>Actions</th></tr></thead>
+          <tbody id="tbl-recent"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOUS LES DOSSIERS -->
+    <div class="view" id="vue-dossiers">
+      <div class="ph">
+        <div class="ph-left">
+          <span class="ph-eyebrow">Gestion</span>
+          <h1 class="ph-title">Tous les dossiers</h1>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Dossiers</span>
+          <div class="table-filters">
+            <button class="filter-btn active" onclick="setFilter('all',this)">Tous</button>
+            <button class="filter-btn" onclick="setFilter('en_cours',this)">En cours</button>
+            <button class="filter-btn" onclick="setFilter('nouveau',this)">Nouveaux</button>
+            <button class="filter-btn" onclick="setFilter('cloture',this)">Clôturés</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Référence</th><th>Défunt</th><th>Date décès</th><th>Déclarant</th><th>Statut</th><th>Progression</th><th>Actions</th></tr></thead>
+          <tbody id="tbl-all"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="view" id="vue-messages">
+      <div class="ph">
+        <div class="ph-left">
+          <span class="ph-eyebrow">Communication</span>
+          <h1 class="ph-title">Messages</h1>
+        </div>
+      </div>
+      <div style="background:var(--stone2);border:1px solid var(--border);padding:40px;text-align:center">
+        <p style="font-size:1rem;color:var(--mist);font-style:italic">Sélectionnez un dossier pour accéder à sa messagerie.</p>
+        <button onclick="showView('vue-dossiers',null)" style="margin-top:20px;background:transparent;border:1px solid var(--border2);color:var(--gold);font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;padding:12px 28px;cursor:pointer;transition:background .3s,color .3s" onmouseover="this.style.background='var(--gold)';this.style.color='var(--ink)'" onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">Voir les dossiers →</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- DETAIL PANEL -->
+<div class="detail-overlay" id="overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="dp-header">
+    <div>
+      <span class="dp-ref" id="dp-ref">—</span>
+      <p class="dp-name" id="dp-name">—</p>
+    </div>
+    <button class="dp-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="dp-body">
+    <div class="dp-section">
+      <span class="dp-section-title">Informations défunt</span>
+      <div class="dp-field"><span class="dp-label">Nom complet</span><span class="dp-val" id="dp-nom">—</span></div>
+      <div class="dp-field"><span class="dp-label">Date de naissance</span><span class="dp-val" id="dp-naissance">—</span></div>
+      <div class="dp-field"><span class="dp-label">Date du décès</span><span class="dp-val" id="dp-deces">—</span></div>
+      <div class="dp-field"><span class="dp-label">Lieu du décès</span><span class="dp-val" id="dp-lieu">—</span></div>
+      <div class="dp-field"><span class="dp-label">Nationalité</span><span class="dp-val" id="dp-nat">—</span></div>
+    </div>
+    <div class="dp-section">
+      <span class="dp-section-title">Démarches</span>
+      <div id="dp-demarches"></div>
+    </div>
+    <div class="dp-section">
+      <span class="dp-section-title">Messagerie famille</span>
+      <div class="dp-msg-thread" id="dp-msg-thread"></div>
+      <div class="dp-compose">
+        <textarea class="dp-input" id="dp-msg-input" placeholder="Message au déclarant…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAdminMsg()}"></textarea>
+        <button class="dp-send" onclick="sendAdminMsg()">Envoyer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://jfzfkejqzcsbemivcnpz.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmemZrZWpxemNzYmVtaXZjbnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTM2NzYsImV4cCI6MjA4ODYyOTY3Nn0.cbBYeJT6__nmyxgZp0kKZDJPSv5kqL-W4I4G-Smv_5Y';
+const{createClient}=supabase;
+const sb=createClient(SB_URL,SB_KEY);
+
+let USER=null,ROLE=null,ALL_DOSSIERS=[],CURRENT_DOSSIER=null,FILTER='all',SEARCH='';
+
+// Catalogue démarches
+const CAT=[
+  {code:'etat_civil',titre:'Déclaration État Civil',delai_label:'24h',urgence:'urgent'},
+  {code:'obseques',titre:'Obsèques',delai_label:'48–72h',urgence:'urgent'},
+  {code:'notaire',titre:'Notaire',delai_label:'1 semaine',urgence:'prioritaire'},
+  {code:'camti',titre:'CAMTI',delai_label:'30j',urgence:'prioritaire'},
+  {code:'banques',titre:'Banques',delai_label:'60j',urgence:'standard'},
+  {code:'fiscalite',titre:'Fiscalité',delai_label:'6 mois',urgence:'standard'},
+  {code:'logement',titre:'Logement',delai_label:'Variable',urgence:'standard'},
+  {code:'assurances',titre:'Assurances',delai_label:'30j',urgence:'standard'},
+  {code:'abonnements',titre:'Abonnements',delai_label:'30j',urgence:'standard'},
+];
+
+const ST_LABELS={nouveau:'Nouveau',en_cours:'En cours',en_attente:'En attente',cloture:'Clôturé'};
+const DEM_LABELS={complete:'Complété',en_cours:'En cours',en_attente:'En attente',bloque:'Bloqué',non_applicable:'N/A'};
+
+async function init(){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='auth.html';return}
+  USER=session.user;
+  const{data:prof}=await sb.from('profiles').select('*').eq('id',USER.id).single();
+  if(!prof||!(prof.role==='admin'||prof.role==='referent')){window.location.href='auth.html';return}
+  ROLE=prof.role;
+
+  // UI user
+  document.getElementById('sb-avatar').textContent=(prof.prenom||'?')[0]+(prof.nom||'?')[0];
+  document.getElementById('sb-username').textContent=(prof.prenom||'')+' '+(prof.nom||'');
+  document.getElementById('sb-role').textContent=ROLE==='admin'?'Administrateur':'Référent';
+  document.getElementById('dash-greeting').textContent='Bonjour, '+(prof.prenom||'');
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  // Charger les dossiers
+  const q=sb.from('dossiers').select('*, declarant:profiles!declarant_id(nom,prenom,telephone), referent:profiles!referent_id(nom,prenom)').order('created_at',{ascending:false});
+  const{data:dossiers}=ROLE==='admin'?await q:await q.eq('referent_id',USER.id);
+
+  ALL_DOSSIERS=dossiers||[];
+
+  // Charger les démarches pour chaque dossier
+  for(const d of ALL_DOSSIERS){
+    const{data:dems}=await sb.from('dossier_demarches').select('*').eq('dossier_id',d.id);
+    d._demarches=dems||[];
+    d._pct=dems?.length?Math.round((dems.filter(x=>x.statut==='complete').length/CAT.length)*100):0;
+  }
+
+  document.getElementById('loading-state').style.display='none';
+  document.getElementById('vue-dash').classList.add('active');
+
+  renderDash();
+  renderTable('tbl-all',ALL_DOSSIERS);
+
+  // Badge urgents
+  const urgents=ALL_DOSSIERS.filter(d=>d.statut!=='cloture'&&d._demarches?.some((dem,i)=>dem.statut==='en_attente'&&CAT[i]?.urgence==='urgent')).length;
+  document.getElementById('badge-urgents').textContent=urgents;
+  document.getElementById('sb-total').textContent=ALL_DOSSIERS.length;
+  document.getElementById('sb-actifs').textContent=ALL_DOSSIERS.filter(d=>d.statut==='en_cours').length;
+}
+
+function renderDash(){
+  const total=ALL_DOSSIERS.length;
+  const en_cours=ALL_DOSSIERS.filter(d=>d.statut==='en_cours').length;
+  const cloture=ALL_DOSSIERS.filter(d=>d.statut==='cloture').length;
+  const urgent=ALL_DOSSIERS.filter(d=>d.statut!=='cloture'&&d.urgence).length;
+  document.getElementById('kpi-total').textContent=total;
+  document.getElementById('kpi-cours').textContent=en_cours;
+  document.getElementById('kpi-urg').textContent=urgent;
+  document.getElementById('kpi-done').textContent=cloture;
+  renderTable('tbl-recent',ALL_DOSSIERS.slice(0,8));
+
+  // Alertes urgentes
+  const alertsEl=document.getElementById('alerts-list');
+  const urgentDossiers=ALL_DOSSIERS.filter(d=>d.urgence&&d.statut!=='cloture').slice(0,3);
+  alertsEl.innerHTML=urgentDossiers.map(d=>`
+    <div class="alert-row">
+      <span class="alert-row-icon">🚨</span>
+      <span class="alert-row-text"><strong>URGENT —</strong> ${d.defunt_prenom} ${d.defunt_nom} · ${d.reference} · Déclaration État Civil à effectuer dans les 24h.</span>
+      <button class="alert-row-btn" onclick="openDetail('${d.id}')">Ouvrir</button>
+    </div>`).join('');
+}
+
+function renderTable(tbodyId,dossiers){
+  const tbody=document.getElementById(tbodyId);
+  const filtered=dossiers.filter(d=>{
+    if(FILTER!=='all'&&d.statut!==FILTER)return false;
+    if(SEARCH){
+      const q=SEARCH.toLowerCase();
+      return(d.defunt_nom||'').toLowerCase().includes(q)||(d.defunt_prenom||'').toLowerCase().includes(q)||(d.reference||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--mist);font-style:italic">Aucun dossier trouvé.</td></tr>`;
+    return;
+  }
+  const fmt=d=>d?new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+  tbody.innerHTML=filtered.map(d=>`
+    <tr>
+      <td class="td-ref">${d.urgence?'<span class="td-urg"></span>':''}${d.reference||'—'}</td>
+      <td class="td-name">${d.defunt_prenom||''} ${d.defunt_nom||''}<small>${d.defunt_nationalite||''}</small></td>
+      ${tbodyId==='tbl-all'?`<td>${fmt(d.defunt_deces)}</td>`:''}
+      <td class="td-name">${d.declarant?.prenom||''} ${d.declarant?.nom||''}<small>${d.declarant?.telephone||''}</small></td>
+      <td><span class="td-badge ${d.statut}">${ST_LABELS[d.statut]||d.statut}</span></td>
+      <td><div class="td-pct"><div class="td-pct-bar"><div class="td-pct-fill" style="width:${d._pct}%"></div></div><span class="td-pct-val">${d._pct}%</span></div></td>
+      <td><div class="td-actions"><button class="td-btn" onclick="openDetail('${d.id}')">Ouvrir</button></div></td>
+    </tr>`).join('');
+}
+
+function filterDossiers(q){SEARCH=q;renderTable('tbl-all',ALL_DOSSIERS);renderTable('tbl-recent',ALL_DOSSIERS.slice(0,8))}
+function setFilter(f,btn){FILTER=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn?.classList.add('active');renderTable('tbl-all',ALL_DOSSIERS)}
+
+async function openDetail(id){
+  CURRENT_DOSSIER=ALL_DOSSIERS.find(d=>d.id===id);
+  if(!CURRENT_DOSSIER)return;
+  const d=CURRENT_DOSSIER;
+  const fmt=x=>x?new Date(x).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):'—';
+  document.getElementById('dp-ref').textContent=d.reference||'—';
+  document.getElementById('dp-name').textContent=(d.defunt_prenom||'')+' '+(d.defunt_nom||'');
+  document.getElementById('dp-nom').textContent=(d.defunt_prenom||'')+' '+(d.defunt_nom||'');
+  document.getElementById('dp-naissance').textContent=fmt(d.defunt_naissance);
+  document.getElementById('dp-deces').textContent=fmt(d.defunt_deces);
+  document.getElementById('dp-lieu').textContent=d.defunt_lieu_deces||'—';
+  document.getElementById('dp-nat').textContent=d.defunt_nationalite||'—';
+
+  // Démarches
+  const demEl=document.getElementById('dp-demarches');
+  demEl.innerHTML=CAT.map(cat=>{
+    const dem=d._demarches?.find(x=>x.demarche_code===cat.code);
+    const st=dem?.statut||'en_attente';
+    return`<div class="dem-item">
+      <div class="dem-dot ${st}"></div>
+      <div class="dem-info"><div class="dem-info-title">${cat.titre}</div><div class="dem-info-delay">${cat.delai_label}</div></div>
+      <select class="dem-select" data-code="${cat.code}" onchange="updateDem('${d.id}','${cat.code}',this.value)">
+        <option value="en_attente" ${st==='en_attente'?'selected':''}>En attente</option>
+        <option value="en_cours"  ${st==='en_cours'?'selected':''}>En cours</option>
+        <option value="complete"  ${st==='complete'?'selected':''}>Complété</option>
+        <option value="bloque"    ${st==='bloque'?'selected':''}>Bloqué</option>
+      </select>
+    </div>`;
+  }).join('');
+
+  // Messages
+  const{data:msgs}=await sb.from('messages').select('*,expediteur:profiles(nom,prenom,role)').eq('dossier_id',d.id).order('created_at');
+  renderDetailMsgs(msgs||[]);
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function renderDetailMsgs(msgs){
+  const thread=document.getElementById('dp-msg-thread');
+  if(!msgs.length){
+    thread.innerHTML=`<div style="font-size:.84rem;color:var(--mist);font-style:italic;padding:10px 0">Aucun message.</div>`;
+    return;
+  }
+  thread.innerHTML=msgs.map(m=>{
+    const isMe=m.expediteur_id===USER.id;
+    const d=new Date(m.created_at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return`<div class="dp-msg ${isMe?'me':'them'}">
+      <div class="dp-msg-author">${isMe?'Vous':(m.expediteur?.prenom||'Famille')}</div>
+      <div class="dp-msg-text">${m.contenu}</div>
+      <div class="dp-msg-time">${d}</div>
+    </div>`;
+  }).join('');
+  thread.scrollTop=thread.scrollHeight;
+}
+
+async function updateDem(dossierId,code,newStatut){
+  await sb.from('dossier_demarches')
+    .update({statut:newStatut,date_completion:newStatut==='complete'?new Date().toISOString():null,completed_by:newStatut==='complete'?USER.id:null})
+    .eq('dossier_id',dossierId).eq('demarche_code',code);
+  const idx=ALL_DOSSIERS.findIndex(d=>d.id===dossierId);
+  if(idx>=0){
+    const di=ALL_DOSSIERS[idx]._demarches?.findIndex(x=>x.demarche_code===code);
+    if(di>=0)ALL_DOSSIERS[idx]._demarches[di].statut=newStatut;
+    ALL_DOSSIERS[idx]._pct=Math.round((ALL_DOSSIERS[idx]._demarches.filter(x=>x.statut==='complete').length/CAT.length)*100);
+  }
+}
+
+async function sendAdminMsg(){
+  const input=document.getElementById('dp-msg-input');
+  const txt=input.value.trim();
+  if(!txt||!CURRENT_DOSSIER)return;
+  input.value='';
+  await sb.from('messages').insert({dossier_id:CURRENT_DOSSIER.id,expediteur_id:USER.id,contenu:txt});
+  const{data:msgs}=await sb.from('messages').select('*,expediteur:profiles(nom,prenom,role)').eq('dossier_id',CURRENT_DOSSIER.id).order('created_at');
+  renderDetailMsgs(msgs||[]);
+}
+
+function closeDetail(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('detail-panel').classList.remove('open');
+  CURRENT_DOSSIER=null;
+}
+
+function showView(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el)el.classList.add('active');
+  const titles={['vue-dash']:'Vue d\'ensemble',['vue-dossiers']:'Tous les dossiers',['vue-messages']:'Messages'};
+  document.getElementById('topbar-title').textContent=titles[id]||'';
+}
+
+async function logout(){await sb.auth.signOut();window.location.href='auth.html'}
+
+function toggleDrawer(){
+  const d=document.getElementById('mob-drawer');
+  const b=document.getElementById('mob-btn');
+  const open=d.classList.toggle('open');
+  b.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeMobDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('mob-btn').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+init();
+</script>
+</body>
+</html>
