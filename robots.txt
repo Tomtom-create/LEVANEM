@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard-famille.html
+Disallow: /dashboard-admin.html
+Disallow: /netlify/
+
+Sitemap: https://levamen.org/sitemap.xml
